@@ -1,0 +1,29 @@
+{
+  "gasguard": {
+    "appInfo": {
+      "projectId": "gasguardkdu",
+      "version": "2.1.0",
+      "author": "WALP Harsha",
+      "updatedAt": "2026-06-26T00:00:00.000Z"
+    },
+    "metrics": {
+      "r2Score": 96.8,
+      "mae": 1.47,
+      "rmse": 1.92,
+      "mape": 4.2
+    },
+    "latestPrediction": {
+      "gasWeightKg": 2.04,
+      "predictedDays": 17,
+      "actualDays": 17,
+      "createdAt": "2026-06-26T00:00:00.000Z"
+    },
+    "realtimeDemo": {
+      "sample1": { "day": 1, "gas": 2.50, "usage": 0.12, "daysLeft": 21, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample2": { "day": 2, "gas": 2.38, "usage": 0.11, "daysLeft": 20, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample3": { "day": 3, "gas": 2.27, "usage": 0.13, "daysLeft": 18, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample4": { "day": 4, "gas": 2.14, "usage": 0.10, "daysLeft": 19, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample5": { "day": 5, "gas": 2.04, "usage": 0.12, "daysLeft": 17, "createdAt": "2026-06-26T00:00:00.000Z" }
+    }
+  }
+}

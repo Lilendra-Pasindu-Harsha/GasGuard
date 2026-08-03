@@ -1,0 +1,14 @@
+{
+  "features": [
+    "gas_weight_kg",
+    "gas_percentage",
+    "daily_usage_kg",
+    "day_of_week",
+    "weekend",
+    "consumption_rate",
+    "rolling_avg_7"
+  ],
+  "target": "days_remaining",
+  "model_type": "LinearRegression",
+  "version": "2.1.0"
+}

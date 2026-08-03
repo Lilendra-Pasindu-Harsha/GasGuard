@@ -1,0 +1,47 @@
+{
+  "devices": {
+    "gasguard-esp32-01": {
+      "latest": {
+        "deviceId": "gasguard-esp32-01",
+        "gasLevel": 0,
+        "gasThreshold": 700,
+        "gasWeightKg": 0,
+        "temperatureC": 0,
+        "humidityPercent": 0,
+        "gasDetected": false,
+        "alarmActive": false,
+        "valveState": "OPEN",
+        "uptimeSeconds": 0,
+        "updatedAt": 0
+      },
+      "events": {
+        "sample_event": {
+          "type": "system_initialized",
+          "message": "GasGuard database initialized.",
+          "gasLevel": 0,
+          "gasThreshold": 700,
+          "temperatureC": 0,
+          "humidityPercent": 0,
+          "gasWeightKg": 0,
+          "valveState": "OPEN",
+          "createdAt": 0
+        }
+      },
+      "commands": {
+        "valveState": {
+          "valveState": "OPEN",
+          "requestedAt": 0
+        },
+        "gasThreshold": {
+          "gasThreshold": 700,
+          "requestedAt": 0
+        }
+      }
+    }
+  },
+  "system": {
+    "name": "GasGuard",
+    "activeDeviceId": "gasguard-esp32-01",
+    "createdAt": 0
+  }
+}

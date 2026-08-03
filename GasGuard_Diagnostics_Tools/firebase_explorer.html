@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Database Explorer & Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #060913;
+            --bg-sidebar: #0b1120;
+            --bg-card: rgba(15, 23, 42, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            
+            --accent-emerald: #10b981;
+            --accent-emerald-glow: rgba(16, 185, 129, 0.2);
+            --accent-sky: #0ea5e9;
+            --accent-sky-glow: rgba(14, 165, 233, 0.2);
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-rose-glow: rgba(244, 63, 94, 0.2);
+
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: var(--accent-amber);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 20px;
+            width: fit-content;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-rose);
+        }
+
+        .status-dot.online {
+            background-color: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            background: rgba(255, 255, 255, 0);
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(14, 165, 233, 0.08);
+            border-color: rgba(14, 165, 233, 0.2);
+            color: var(--accent-sky);
+            font-weight: 600;
+        }
+
+        .table-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-item.active .table-badge {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--accent-sky);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+
+        /* Config Collapse Button */
+        .config-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .config-toggle:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .config-panel {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .config-panel.collapsed {
+            display: none;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .input-field {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.8rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-sky);
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+        }
+
+        .btn {
+            background: var(--accent-sky);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .btn-danger {
+            background: var(--accent-rose);
+        }
+
+        .btn-danger:hover {
+            background: #e11d48;
+        }
+
+        /* Main Workspace Container */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top Header */
+        .main-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(6, 9, 19, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            display: flex;
+        }
+
+        .search-input {
+            padding-left: 36px;
+            width: 240px;
+        }
+
+        /* Grid View & Tables */
+        .grid-container {
+            flex-grow: 1;
+            padding: 24px;
+            overflow: auto;
+            position: relative;
+        }
+
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(12px);
+        }
+
+        .table-wrapper {
+            overflow: auto;
+            flex-grow: 1;
+        }
+
+        .explorer-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .explorer-table th {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .explorer-table th.sortable {
+            cursor: pointer;
+        }
+
+        .explorer-table th.sortable:hover {
+            color: var(--text-primary);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .sort-icon {
+            display: inline-flex;
+            margin-left: 4px;
+            vertical-align: middle;
+            font-size: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .explorer-table th.sortable:hover .sort-icon {
+            opacity: 1;
+        }
+
+        .explorer-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .explorer-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+        }
+
+        .explorer-table tr.selected td {
+            background: rgba(14, 165, 233, 0.05);
+            border-bottom-color: rgba(14, 165, 233, 0.15);
+        }
+
+        .row-id-cell {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--accent-sky) !important;
+        }
+
+        /* Badges for nested items */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .type-badge.object {
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.2);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .type-badge.array {
+            color: var(--accent-sky);
+            border-color: rgba(14, 165, 233, 0.2);
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        .type-badge.boolean {
+            color: var(--accent-emerald);
+            border-color: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* Empty states */
+        .empty-state {
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 16px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .empty-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .empty-text {
+            font-size: 0.85rem;
+            max-width: 380px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Detail Drawer styling */
+        .detail-drawer {
+            position: absolute;
+            top: 0;
+            right: -460px;
+            width: 450px;
+            height: 100%;
+            background: #090f1d;
+            border-left: 1px solid var(--border-color);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .detail-drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .drawer-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .drawer-subtitle {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 50%;
+            transition: var(--transition-smooth);
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .drawer-body {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Interactive JSON Tree View */
+        .json-tree-container {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .json-node {
+            margin-left: 18px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .json-expand-btn {
+            position: absolute;
+            left: -16px;
+            top: 3px;
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            user-select: none;
+            color: var(--text-muted);
+        }
+
+        .json-expand-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .json-key {
+            color: #ef4444; /* red */
+            font-weight: 500;
+        }
+
+        .json-val-string { color: var(--accent-emerald); }
+        .json-val-number { color: var(--accent-sky); }
+        .json-val-boolean { color: var(--accent-amber); }
+        .json-val-null { color: var(--text-muted); }
+
+        .json-leaf {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-left: 18px;
+        }
+
+        /* Editing controls inside JSON Tree */
+        .json-edit-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: inherit;
+            padding: 1px 6px;
+            border-radius: 4px;
+            outline: none;
+            width: 140px;
+        }
+
+        .json-edit-input:focus {
+            border-color: var(--accent-sky);
+        }
+
+        .json-action-btn {
+            opacity: 0;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: var(--transition-smooth);
+            padding: 2px;
+        }
+
+        .json-node:hover > .json-action-btn,
+        .json-leaf:hover .json-action-btn {
+            opacity: 1;
+        }
+
+        .json-action-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .drawer-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* Modal dialogue styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            width: 520px;
+            max-width: 90vw;
+            background: #0b1222;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 60vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Tab Layouts */
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-sky);
+            border-bottom-color: var(--accent-sky);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* JSON Text Area Edit */
+        .json-textarea {
+            width: 100%;
+            height: 220px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 12px;
+            outline: none;
+            resize: vertical;
+        }
+
+        .json-textarea:focus {
+            border-color: var(--accent-sky);
+        }
+
+        /* Inline Editing styling for the table cells */
+        .inline-edit-input {
+            width: 100%;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--accent-sky);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: inherit;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #0f172a;
+            border-left: 4px solid var(--accent-sky);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+            transform: translateX(-120%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+            font-size: 0.85rem;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left-color: var(--accent-emerald); }
+        .toast.error { border-left-color: var(--accent-rose); }
+        .toast.warning { border-left-color: var(--accent-amber); }
+
+        .toast-icon {
+            display: flex;
+            align-items: center;
+        }
+        .toast-success-icon { color: var(--accent-emerald); }
+        .toast-error-icon { color: var(--accent-rose); }
+        .toast-info-icon { color: var(--accent-sky); }
+
+        /* Loader Overlay */
+        .loader-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 9, 19, 0.7);
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .loader-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(14, 165, 233, 0.1);
+            border-top-color: var(--accent-sky);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Quick actions tooltips */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        .pagination-container {
+            padding: 12px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .pagination-info {
+            color: var(--text-muted);
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #0f172a;
+            min-width: 140px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            z-index: 30;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .dropdown-content a {
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .dropdown-content a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .dropdown-menu:hover .dropdown-content {
+            display: block;
+        }
+
+        .error-message {
+            color: var(--accent-rose);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <span class="logo-icon">🔥</span>
+                <span class="logo-title">Firebase Explorer</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="dbStatusDot"></div>
+                <span id="dbStatusText">Disconnected</span>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <!-- Collapsible Settings Panel -->
+            <div>
+                <div class="config-toggle" onclick="toggleConfig()">
+                    <span>⚙️ Database Credentials</span>
+                    <span id="configToggleIcon">▼</span>
+                </div>
+                <div class="config-panel collapsed" id="configPanel" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label class="form-label">Database URL</label>
+                        <input type="text" id="cfgDbUrl" class="input-field" placeholder="https://your-rtdb.firebaseio.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">API Key</label>
+                        <input type="password" id="cfgApiKey" class="input-field" placeholder="AIzaSy...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="cfgEmail" class="input-field" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="cfgPassword" class="input-field" placeholder="••••••••">
+                    </div>
+                    <button class="btn" style="width: 100%; margin-top: 6px;" onclick="saveConfigAndConnect()">
+                        Connect Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tables Section -->
+            <div>
+                <div class="section-title">Root Tables / Paths</div>
+                <ul class="nav-list" id="tablesList">
+                    <!-- Tables list will be dynamically populated -->
+                    <div class="empty-state" style="padding: 20px 0; font-size: 0.75rem;">
+                        <span style="font-size:1.5rem">📂</span>
+                        <span>No tables loaded yet. Connect to continue.</span>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Loader -->
+        <div class="loader-overlay" id="contentLoader">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Top Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <div class="table-title">
+                    <span id="activeTableName">Select a table</span>
+                </div>
+                <div class="table-meta" id="tableMetaInfo">
+                    Select a path from the sidebar to inspect records.
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="tableSearch" class="input-field search-input" placeholder="Search values..." oninput="handleSearch(this.value)">
+                </div>
+
+                <button class="btn btn-secondary tooltip" data-tooltip="Reload active table" onclick="refreshActiveTable()">
+                    <span>🔄</span> Refresh
+                </button>
+
+                <button class="btn tooltip" id="btnAddRecordBtn" data-tooltip="Add new record" onclick="openAddRecordModal()" disabled>
+                    <span>➕</span> Add Record
+                </button>
+
+                <div class="dropdown-menu">
+                    <button class="btn btn-secondary tooltip" id="btnExportBtn" data-tooltip="Export active data" disabled>
+                        <span>📥</span> Export
+                    </button>
+                    <div class="dropdown-content">
+                        <a onclick="exportData('json')">Export as JSON</a>
+                        <a onclick="exportData('csv')">Export as CSV</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Grid Container -->
+        <div class="grid-container">
+            <div class="table-card" id="gridCard" style="display: none;">
+                <div class="table-wrapper">
+                    <table class="explorer-table" id="explorerTable">
+                        <thead>
+                            <tr id="tableHeaders">
+                                <!-- Column headers populated dynamically -->
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Rows populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination Footer -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="paginationInfo">
+                        Showing 0 of 0 entries
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-secondary" style="padding: 4px 10px;" id="prevPageBtn" onclick="changePage(-1)">◀ Prev</button>
+                        <span id="pageNumberDisplay">Page 1 of 1</span>
+                        <button class="btn btn-secondary" style="padding: 4px 10px;" id="nextPageBtn" onclick="changePage(1)">Next ▶</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Initial Empty State -->
+            <div class="empty-state" id="initialEmptyState">
+                <div class="empty-icon">⚡</div>
+                <div class="empty-title">Firebase Database Explorer</div>
+                <div class="empty-text">
+                    This manager structures Firebase JSON trees like relational tables. Connect, and select a node key in the sidebar to visualize rows, columns, and perform live updates.
+                </div>
+                <button class="btn" style="margin-top: 10px;" onclick="openConfigPanel()">
+                    Configure Credentials
+                </button>
+            </div>
+        </div>
+
+        <!-- Detail Drawer (Slide-out) -->
+        <div class="detail-drawer" id="detailDrawer">
+            <div class="drawer-header">
+                <div>
+                    <h3 class="drawer-title">Record Details</h3>
+                    <div class="drawer-subtitle" id="drawerRecordId">ID: --</div>
+                </div>
+                <button class="close-btn" onclick="closeDrawer()">✕</button>
+            </div>
+            
+            <div class="drawer-body">
+                <div>
+                    <div class="section-title" style="margin-bottom: 8px;">Interactive Tree View</div>
+                    <div class="json-tree-container" id="jsonTreeContent">
+                        <!-- JSON Tree is dynamically generated here -->
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+                    <div class="status-indicator" style="width: 100%; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.05); color: var(--accent-amber);">
+                        💡 Double-click values to edit. Changes require clicking "Save changes" to submit.
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawer-footer">
+                <button class="btn" style="flex-grow: 1;" onclick="saveDrawerRecordChanges()">
+                    💾 Save Changes
+                </button>
+                <button class="btn btn-danger" style="flex-shrink: 0;" onclick="deleteDrawerRecord()">
+                    🗑️ Delete
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Record Modal -->
+    <div class="modal-overlay" id="addRecordModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitleText">Add New Record</h3>
+                <button class="close-btn" onclick="closeAddRecordModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="switchModalTab('form')">Form Builder</button>
+                    <button class="tab-btn" onclick="switchModalTab('json')">Raw JSON</button>
+                </div>
+
+                <!-- Form Tab -->
+                <div class="tab-content active" id="modalTabForm">
+                    <div class="form-group">
+                        <label class="form-label">Record Key / ID (Leave blank to auto-generate)</label>
+                        <input type="text" id="newRecordId" class="input-field" placeholder="e.g. -OwT7k0IIDve7ZDOxQi0 or record_001">
+                    </div>
+                    <div id="dynamicFormFields" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Dynamically generated inputs based on existing fields -->
+                    </div>
+                </div>
+
+                <!-- JSON Tab -->
+                <div class="tab-content" id="modalTabJson">
+                    <div class="form-group">
+                        <label class="form-label">Record Key / ID (Leave blank to auto-generate)</label>
+                        <input type="text" id="newRecordIdJson" class="input-field" placeholder="e.g. record_001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">JSON Payload</label>
+                        <textarea id="newRecordJsonArea" class="json-textarea" placeholder='{ "field1": "value", "field2": 123 }'></textarea>
+                        <div class="error-message" id="jsonSyntaxError">Invalid JSON format</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddRecordModal()">Cancel</button>
+                <button class="btn" onclick="submitNewRecord()">Add Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Script Block -->
+    <script>
+        // ========== CONSTANTS & DEFAULT CONFIGS (From GasGuard project check_firebase.py) ==========
+        const DEFAULT_CONFIG = {
+            apiKey: "AIzaSyAnUdXb9dJzbqOF90RwgAxMdtHJzfchaSg",
+            databaseUrl: "https://gasguardkdu-default-rtdb.asia-southeast1.firebasedatabase.app",
+            email: "gasgurd@gmail.com",
+            password: "gasgurd"
+        };
+
+        // ========== APPLICATION STATE ==========
+        let dbConfig = { ...DEFAULT_CONFIG };
+        let idToken = null;
+        let dbStructure = {}; // Holds root keys (tables)
+        let activeTable = null; // Currently selected table key
+        let activeData = null; // Currently fetched data for activeTable
+        let parsedRows = []; // Flattened rows for sorting/filtering/paginating
+        let parsedColumns = []; // Compiled list of columns
+        let filteredRows = []; // Rows matching active filters/searches
+        let sorting = { column: null, direction: 'asc' };
+        let pagination = { page: 1, limit: 10 };
+        let selectedRowId = null;
+        let selectedRowOriginalData = null; // Copy of original row data for drawer editing
+        let activeModalTab = 'form';
+
+        // ========== CORE INITIALIZATION ==========
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load credentials from localStorage or fallback to default
+            const saved = localStorage.getItem('firebase_explorer_config');
+            if (saved) {
+                try {
+                    dbConfig = JSON.parse(saved);
+                } catch(e) {}
+            }
+            
+            // Populating credentials inputs
+            document.getElementById('cfgDbUrl').value = dbConfig.databaseUrl || '';
+            document.getElementById('cfgApiKey').value = dbConfig.apiKey || '';
+            document.getElementById('cfgEmail').value = dbConfig.email || '';
+            document.getElementById('cfgPassword').value = dbConfig.password || '';
+
+            // Auto connect if configuration is complete
+            if (dbConfig.databaseUrl && dbConfig.apiKey && dbConfig.email && dbConfig.password) {
+                saveConfigAndConnect(true);
+            }
+        });
+
+        // ========== UTILITY & UX FUNCTIONS ==========
+        function toggleConfig() {
+            const panel = document.getElementById('configPanel');
+            const icon = document.getElementById('configToggleIcon');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+                icon.textContent = '▲';
+            } else {
+                panel.classList.add('collapsed');
+                icon.textContent = '▼';
+            }
+        }
+
+        function openConfigPanel() {
+            const panel = document.getElementById('configPanel');
+            panel.classList.remove('collapsed');
+            document.getElementById('configToggleIcon').textContent = '▲';
+            document.getElementById('cfgDbUrl').focus();
+        }
+
+        function showLoader(show = true) {
+            const loader = document.getElementById('contentLoader');
+            if (show) loader.classList.add('active');
+            else loader.classList.remove('active');
+        }
+
+        // Show elegant toasts
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let iconText = 'ℹ️';
+            if (type === 'success') iconText = '✅';
+            if (type === 'error') iconText = '❌';
+            if (type === 'warning') iconText = '⚠️';
+
+            toast.innerHTML = `
+                <div class="toast-icon">${iconText}</div>
+                <div style="flex-grow:1">${message}</div>
+            `;
+            container.appendChild(toast);
+            
+            // Trigger reflow to start transition
+            toast.offsetHeight;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // ========== FIREBASE REST API FUNCTIONS ==========
+        async function fetchAPI(url, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            const options = { method, headers };
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            const res = await fetch(url, options);
+            if (!res.ok) {
+                const errText = await res.text();
+                let errMsg = 'Network request failed';
+                try {
+                    const parsedErr = JSON.parse(errText);
+                    if (parsedErr.error && parsedErr.error.message) {
+                        errMsg = parsedErr.error.message;
+                    }
+                } catch(e) {}
+                throw new Error(errMsg);
+            }
+            return await res.json();
+        }
+
+        async function authenticate() {
+            updateStatus('connecting', 'Connecting...');
+            const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${dbConfig.apiKey}`;
+            const payload = {
+                email: dbConfig.email,
+                password: dbConfig.password,
+                returnSecureToken: true
+            };
+            
+            try {
+                const res = await fetchAPI(authUrl, 'POST', payload);
+                if (res.idToken) {
+                    idToken = res.idToken;
+                    updateStatus('online', 'Connected');
+                    showToast('Successfully authenticated with Firebase!', 'success');
+                    return true;
+                }
+            } catch(e) {
+                updateStatus('offline', 'Disconnected');
+                showToast(`Auth Failed: ${e.message}`, 'error');
+                return false;
+            }
+            return false;
+        }
+
+        function updateStatus(state, label) {
+            const dot = document.getElementById('dbStatusDot');
+            const text = document.getElementById('dbStatusText');
+            
+            dot.className = 'status-dot';
+            if (state === 'online') dot.classList.add('online');
+            else if (state === 'connecting') dot.style.backgroundColor = 'var(--accent-amber)';
+            else dot.style.backgroundColor = 'var(--accent-rose)';
+            
+            text.textContent = label;
+        }
+
+        async function saveConfigAndConnect(silent = false) {
+            const url = document.getElementById('cfgDbUrl').value.trim();
+            const key = document.getElementById('cfgApiKey').value.trim();
+            const email = document.getElementById('cfgEmail').value.trim();
+            const pass = document.getElementById('cfgPassword').value.trim();
+
+            if (!url || !key || !email || !pass) {
+                showToast('Please fill out all credentials', 'warning');
+                return;
+            }
+
+            dbConfig = {
+                databaseUrl: url.endsWith('/') ? url.slice(0, -1) : url,
+                apiKey: key,
+                email: email,
+                password: pass
+            };
+
+            localStorage.setItem('firebase_explorer_config', JSON.stringify(dbConfig));
+            
+            const authenticated = await authenticate();
+            if (authenticated) {
+                // Collapsed the config panel automatically
+                document.getElementById('configPanel').classList.add('collapsed');
+                document.getElementById('configToggleIcon').textContent = '▼';
+                
+                await loadDatabaseSchema();
+            }
+        }
+
+        // Fetch tables (shallow keys of the root)
+        async function loadDatabaseSchema() {
+            if (!idToken) return;
+            showLoader(true);
+            try {
+                const url = `${dbConfig.databaseUrl}/.json?auth=${idToken}&shallow=true`;
+                const rootKeys = await fetchAPI(url);
+                
+                dbStructure = rootKeys || {};
+                renderTablesList();
+            } catch(e) {
+                showToast(`Failed to load schema: ${e.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function renderTablesList() {
+            const list = document.getElementById('tablesList');
+            list.innerHTML = '';
+            
+            const keys = Object.keys(dbStructure);
+            if (keys.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state" style="padding: 20px 0; font-size: 0.75rem;">
+                        <span style="font-size:1.5rem">📂</span>
+                        <span>Database is empty. Create a table node.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            keys.sort().forEach(table => {
+                const li = document.createElement('li');
+                const isActive = activeTable === table;
+                li.className = `nav-item ${isActive ? 'active' : ''}`;
+                li.onclick = () => selectTable(table);
+                
+                // Fetching approximate size (children count) is tricky, shallow helps
+                li.innerHTML = `
+                    <span>📂 &nbsp;${table}</span>
+                    <span class="table-badge" id="badge-${table}">...</span>
+                `;
+                list.appendChild(li);
+                
+                // Load count in background asynchronously
+                fetchTableCount(table);
+            });
+        }
+
+        async function fetchTableCount(table) {
+            try {
+                const url = `${dbConfig.databaseUrl}/${table}.json?auth=${idToken}&shallow=true`;
+                const res = await fetchAPI(url);
+                const count = res ? Object.keys(res).length : 0;
+                const badge = document.getElementById(`badge-${table}`);
+                if (badge) badge.textContent = count;
+            } catch(e) {
+                const badge = document.getElementById(`badge-${table}`);
+                if (badge) badge.textContent = 'Err';
+            }
+        }
+
+        // ========== RECORD EXPLORER & DATA GRID ==========
+        async function selectTable(table) {
+            activeTable = table;
+            document.getElementById('activeTableName').textContent = table;
+            document.getElementById('tableMetaInfo').textContent = `Fetching path: /${table}...`;
+            
+            // Highlight selected in sidebar list
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.querySelector('span').textContent.includes(table)) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            await fetchTableData();
+            
+            // Enable Actions
+            document.getElementById('btnAddRecordBtn').removeAttribute('disabled');
+            document.getElementById('btnExportBtn').removeAttribute('disabled');
+        }
+
+        async function fetchTableData() {
+            if (!activeTable || !idToken) return;
+            showLoader(true);
+            try {
+                const url = `${dbConfig.databaseUrl}/${activeTable}.json?auth=${idToken}`;
+                activeData = await fetchAPI(url);
+                
+                document.getElementById('initialEmptyState').style.display = 'none';
+                document.getElementById('gridCard').style.display = 'flex';
+                
+                parseDataToGrid();
+            } catch(e) {
+                showToast(`Failed to fetch data: ${e.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Convert key-value records (JSON) into Grid Rows & Columns
+        function parseDataToGrid() {
+            parsedRows = [];
+            parsedColumns = new Set();
+            
+            if (!activeData) {
+                renderGrid();
+                return;
+            }
+
+            // Realtime database rows might be in array or object form
+            if (Array.isArray(activeData)) {
+                // Rare: DB path was loaded as numeric indices
+                activeData.forEach((val, idx) => {
+                    if (val === null) return;
+                    const row = { _id: String(idx) };
+                    if (typeof val === 'object' && val !== null) {
+                        Object.assign(row, val);
+                        Object.keys(val).forEach(k => parsedColumns.add(k));
+                    } else {
+                        row.value = val;
+                        parsedColumns.add('value');
+                    }
+                    parsedRows.push(row);
+                });
+            } else if (typeof activeData === 'object') {
+                Object.entries(activeData).forEach(([key, val]) => {
+                    const row = { _id: key };
+                    if (typeof val === 'object' && val !== null) {
+                        Object.assign(row, val);
+                        Object.keys(val).forEach(k => parsedColumns.add(k));
+                    } else {
+                        row.value = val;
+                        parsedColumns.add('value');
+                    }
+                    parsedRows.push(row);
+                });
+            }
+
+            parsedColumns = Array.from(parsedColumns).sort();
+            // Prepend Row ID as first column
+            parsedColumns.unshift('_id');
+
+            filteredRows = [...parsedRows];
+            
+            // Reset sorting
+            sorting = { column: null, direction: 'asc' };
+            pagination.page = 1;
+            
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const headersTr = document.getElementById('tableHeaders');
+            const body = document.getElementById('tableBody');
+            
+            headersTr.innerHTML = '';
+            body.innerHTML = '';
+
+            if (filteredRows.length === 0) {
+                document.getElementById('tableMetaInfo').textContent = `Table is empty or filtered out.`;
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="100%" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                            <span style="font-size:2rem">📁</span>
+                            <div style="font-weight: 600; margin-top: 8px;">No records found</div>
+                            <div style="font-size: 0.75rem; margin-top: 4px;">Click 'Add Record' to create a node.</div>
+                        </td>
+                    </tr>
+                `;
+                updatePaginationControls();
+                return;
+            }
+
+            document.getElementById('tableMetaInfo').textContent = `Loaded ${parsedRows.length} records.`;
+
+            // 1. Render headers
+            parsedColumns.forEach(col => {
+                const th = document.createElement('th');
+                th.className = 'sortable';
+                th.onclick = () => handleSort(col);
+                
+                let displayName = col === '_id' ? 'ID' : col;
+                let arrow = '';
+                if (sorting.column === col) {
+                    arrow = sorting.direction === 'asc' ? ' ▲' : ' ▼';
+                }
+                
+                th.innerHTML = `${displayName}<span class="sort-icon">${arrow || ' ⇅'}</span>`;
+                headersTr.appendChild(th);
+            });
+
+            // 2. Paginate & Render rows
+            const startIndex = (pagination.page - 1) * pagination.limit;
+            const endIndex = Math.min(startIndex + pagination.limit, filteredRows.length);
+            const pageItems = filteredRows.slice(startIndex, endIndex);
+
+            pageItems.forEach(row => {
+                const tr = document.createElement('tr');
+                if (selectedRowId === row._id) tr.className = 'selected';
+                
+                // Select row on single click to open drawer
+                tr.onclick = (e) => {
+                    // Prevent drawer trigger on cell inline edit click
+                    if (e.target.closest('.inline-edit-input')) return;
+                    selectRow(row._id);
+                };
+
+                parsedColumns.forEach(col => {
+                    const td = document.createElement('td');
+                    const val = row[col];
+                    
+                    if (col === '_id') {
+                        td.className = 'row-id-cell';
+                        td.textContent = val;
+                        td.title = val;
+                    } else if (val === undefined) {
+                        td.innerHTML = `<span style="color: var(--text-muted); font-style: italic;">null</span>`;
+                    } else {
+                        // Render values based on type
+                        const type = typeof val;
+                        if (val === null) {
+                            td.innerHTML = `<span style="color: var(--text-muted); font-style: italic;">null</span>`;
+                        } else if (type === 'object') {
+                            const isArr = Array.isArray(val);
+                            td.innerHTML = `<span class="type-badge ${isArr ? 'array' : 'object'}" onclick="event.stopPropagation(); selectRow('${row._id}')">${isArr ? 'Array' : 'Object'}</span>`;
+                        } else if (type === 'boolean') {
+                            td.innerHTML = `<span class="type-badge boolean">${val ? 'True' : 'False'}</span>`;
+                        } else {
+                            td.textContent = val;
+                            td.title = val;
+                        }
+
+                        // Allow inline cell editing for strings/numbers/booleans on double click
+                        if (val !== null && type !== 'object') {
+                            td.ondblclick = (e) => {
+                                e.stopPropagation();
+                                enterInlineEdit(td, row._id, col, val);
+                            };
+                        }
+                    }
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+
+            updatePaginationControls();
+        }
+
+        // Inline Cell Editing
+        function enterInlineEdit(cellElement, rowId, colName, value) {
+            const originalHtml = cellElement.innerHTML;
+            const input = document.createElement('input');
+            input.type = typeof value === 'number' ? 'number' : 'text';
+            input.value = value;
+            input.className = 'inline-edit-input';
+            
+            cellElement.innerHTML = '';
+            cellElement.appendChild(input);
+            input.focus();
+            input.select();
+
+            const finishEdit = async (save) => {
+                const newVal = input.value.trim();
+                cellElement.innerHTML = originalHtml; // Revert initially to restore HTML layout
+
+                if (save && newVal !== String(value)) {
+                    showLoader(true);
+                    let castedVal = newVal;
+                    if (typeof value === 'number') castedVal = Number(newVal);
+                    if (typeof value === 'boolean') castedVal = newVal.toLowerCase() === 'true';
+
+                    try {
+                        const path = `${dbConfig.databaseUrl}/${activeTable}/${rowId}/${colName}.json?auth=${idToken}`;
+                        await fetchAPI(path, 'PUT', castedVal);
+                        
+                        // Update local states
+                        if (!activeData[rowId]) activeData[rowId] = {};
+                        activeData[rowId][colName] = castedVal;
+                        
+                        showToast(`Cell updated successfully!`, 'success');
+                        parseDataToGrid();
+                    } catch(e) {
+                        showToast(`Save failed: ${e.message}`, 'error');
+                    } finally {
+                        showLoader(false);
+                    }
+                }
+            };
+
+            input.onblur = () => finishEdit(true);
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') finishEdit(true);
+                if (e.key === 'Escape') finishEdit(false);
+            };
+        }
+
+        // ========== SORT, FILTER & PAGINATION ==========
+        function handleSearch(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) {
+                filteredRows = [...parsedRows];
+            } else {
+                filteredRows = parsedRows.filter(row => {
+                    return Object.entries(row).some(([k, val]) => {
+                        if (k === '_id') return val.toLowerCase().includes(q);
+                        if (val === null || val === undefined) return false;
+                        if (typeof val === 'object') return false; // Skip nested objects in text search
+                        return String(val).toLowerCase().includes(q);
+                    });
+                });
+            }
+            pagination.page = 1;
+            renderGrid();
+        }
+
+        function handleSort(col) {
+            if (sorting.column === col) {
+                sorting.direction = sorting.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sorting.column = col;
+                sorting.direction = 'asc';
+            }
+
+            filteredRows.sort((a, b) => {
+                let valA = a[col];
+                let valB = b[col];
+                
+                if (valA === undefined || valA === null) valA = '';
+                if (valB === undefined || valB === null) valB = '';
+
+                // Handle numeric sorting
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return sorting.direction === 'asc' ? valA - valB : valB - valA;
+                }
+
+                // Default string sorting
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
+
+                if (valA < valB) return sorting.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sorting.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderGrid();
+        }
+
+        function updatePaginationControls() {
+            const limit = pagination.limit;
+            const total = filteredRows.length;
+            const totalPages = Math.max(1, Math.ceil(total / limit));
+            
+            if (pagination.page > totalPages) pagination.page = totalPages;
+            
+            const start = total === 0 ? 0 : (pagination.page - 1) * limit + 1;
+            const end = Math.min(start + limit - 1, total);
+            
+            document.getElementById('paginationInfo').textContent = `Showing ${start} to ${end} of ${total} entries`;
+            document.getElementById('pageNumberDisplay').textContent = `Page ${pagination.page} of ${totalPages}`;
+            
+            document.getElementById('prevPageBtn').disabled = pagination.page === 1;
+            document.getElementById('nextPageBtn').disabled = pagination.page === totalPages;
+        }
+
+        function changePage(delta) {
+            const limit = pagination.limit;
+            const totalPages = Math.ceil(filteredRows.length / limit);
+            const newPage = pagination.page + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                pagination.page = newPage;
+                renderGrid();
+            }
+        }
+
+        function refreshActiveTable() {
+            fetchTableData();
+            loadDatabaseSchema(); // also refresh counts in background
+        }
+
+        // ========== DATA EXPORT ==========
+        function exportData(format) {
+            if (!filteredRows || filteredRows.length === 0) {
+                showToast('No data to export', 'warning');
+                return;
+            }
+
+            let mime = 'application/json';
+            let ext = 'json';
+            let content = '';
+
+            if (format === 'json') {
+                content = JSON.stringify(filteredRows, null, 2);
+            } else if (format === 'csv') {
+                mime = 'text/csv';
+                ext = 'csv';
+                
+                // Grab headers
+                const cols = parsedColumns.filter(c => c !== '_id');
+                // ID first, then rest
+                const finalHeaders = ['id', ...cols];
+                const headerRow = finalHeaders.map(h => `"${h.replace(/"/g, '""')}"`).join(',');
+                
+                const csvRows = filteredRows.map(row => {
+                    return finalHeaders.map(col => {
+                        const cellVal = col === 'id' ? row._id : row[col];
+                        if (cellVal === undefined || cellVal === null) return '';
+                        if (typeof cellVal === 'object') return '"[Object]"';
+                        return `"${String(cellVal).replace(/"/g, '""')}"`;
+                    }).join(',');
+                });
+                
+                content = [headerRow, ...csvRows].join('\n');
+            }
+
+            const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `${activeTable}_export_${Date.now()}.${ext}`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast(`Table exported as ${format.toUpperCase()}`, 'success');
+        }
+
+        // ========== RECORD DETAIL PANEL / DRAWER (READ/UPDATE/DELETE) ==========
+        function selectRow(rowId) {
+            selectedRowId = rowId;
+            selectedRowOriginalData = activeData[rowId] || (Array.isArray(activeData) ? activeData[Number(rowId)] : null);
+            
+            if (!selectedRowOriginalData) {
+                showToast(`Record data not found`, 'error');
+                return;
+            }
+
+            // Copy object to prevent early editing pollution
+            selectedRowOriginalData = JSON.parse(JSON.stringify(selectedRowOriginalData));
+
+            document.getElementById('drawerRecordId').textContent = `ID: ${rowId}`;
+            renderJsonTreeViewer(selectedRowOriginalData);
+            
+            // Highlight selected row in table list
+            renderGrid();
+            
+            document.getElementById('detailDrawer').classList.add('open');
+        }
+
+        function closeDrawer() {
+            selectedRowId = null;
+            selectedRowOriginalData = null;
+            document.getElementById('detailDrawer').classList.remove('open');
+            renderGrid();
+        }
+
+        // Interactive collapsible JSON tree generator
+        function renderJsonTreeViewer(obj) {
+            const container = document.getElementById('jsonTreeContent');
+            container.innerHTML = '';
+            
+            const rootNode = document.createElement('div');
+            rootNode.className = 'json-root';
+            
+            if (typeof obj !== 'object' || obj === null) {
+                rootNode.appendChild(createJsonLeafNode('value', obj, []));
+            } else {
+                Object.entries(obj).forEach(([key, val]) => {
+                    const node = createJsonTreeNode(key, val, [key]);
+                    rootNode.appendChild(node);
+                });
+            }
+            container.appendChild(rootNode);
+        }
+
+        function createJsonTreeNode(key, val, path) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'json-node';
+            
+            const isObj = typeof val === 'object' && val !== null;
+
+            if (isObj) {
+                const isArr = Array.isArray(val);
+                const keys = Object.keys(val);
+                
+                // Collapsible header
+                const header = document.createElement('div');
+                header.style.cursor = 'pointer';
+                header.innerHTML = `
+                    <span class="json-expand-btn">▼</span>
+                    <span class="json-key">${key}</span>: 
+                    <span style="color: var(--text-muted)">${isArr ? `Array[${keys.length}]` : `Object{${keys.length}}`}</span>
+                `;
+                
+                const childrenContainer = document.createElement('div');
+                childrenContainer.style.paddingLeft = '8px';
+                
+                keys.forEach(k => {
+                    const childPath = [...path, k];
+                    const childNode = createJsonTreeNode(k, val[k], childPath);
+                    childrenContainer.appendChild(childNode);
+                });
+
+                // Toggle logic
+                header.onclick = (e) => {
+                    e.stopPropagation();
+                    const btn = header.querySelector('.json-expand-btn');
+                    if (childrenContainer.style.display === 'none') {
+                        childrenContainer.style.display = 'block';
+                        btn.textContent = '▼';
+                    } else {
+                        childrenContainer.style.display = 'none';
+                        btn.textContent = '▶';
+                    }
+                };
+
+                // Add delete sub-attribute action icon
+                const delIcon = document.createElement('span');
+                delIcon.className = 'json-action-btn';
+                delIcon.innerHTML = '&nbsp;🗑️';
+                delIcon.title = 'Remove key';
+                delIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    deletePathInDrawerObj(path);
+                };
+                header.appendChild(delIcon);
+
+                // Add create sub-attribute icon
+                const addIcon = document.createElement('span');
+                addIcon.className = 'json-action-btn';
+                addIcon.innerHTML = '&nbsp;➕';
+                addIcon.title = 'Add nested property';
+                addIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    addNestedProperty(path, isArr);
+                };
+                header.appendChild(addIcon);
+
+                nodeDiv.appendChild(header);
+                nodeDiv.appendChild(childrenContainer);
+            } else {
+                return createJsonLeafNode(key, val, path);
+            }
+
+            return nodeDiv;
+        }
+
+        function createJsonLeafNode(key, val, path) {
+            const leafDiv = document.createElement('div');
+            leafDiv.className = 'json-leaf';
+            
+            let valClass = 'json-val-string';
+            let displayVal = JSON.stringify(val);
+            
+            if (typeof val === 'number') valClass = 'json-val-number';
+            else if (typeof val === 'boolean') valClass = 'json-val-boolean';
+            else if (val === null) valClass = 'json-val-null';
+
+            leafDiv.innerHTML = `
+                <span class="json-key">${key}</span>: 
+                <span class="${valClass}" id="leaf-span-${path.join('-')}">${displayVal}</span>
+            `;
+
+            // Edit icon
+            const editBtn = document.createElement('span');
+            editBtn.className = 'json-action-btn';
+            editBtn.innerHTML = ' &nbsp;✏️';
+            editBtn.title = 'Edit value';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                enterLeafNodeEdit(leafDiv.querySelector(`[id^=leaf-span-]`), path, val);
+            };
+            leafDiv.appendChild(editBtn);
+
+            // Delete icon
+            const delBtn = document.createElement('span');
+            delBtn.className = 'json-action-btn';
+            delBtn.innerHTML = ' &nbsp;🗑️';
+            delBtn.title = 'Delete value';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                deletePathInDrawerObj(path);
+            };
+            leafDiv.appendChild(delBtn);
+
+            return leafDiv;
+        }
+
+        function enterLeafNodeEdit(spanElement, path, originalValue) {
+            const input = document.createElement('input');
+            input.type = typeof originalValue === 'number' ? 'number' : 'text';
+            input.value = originalValue === null ? '' : originalValue;
+            input.className = 'json-edit-input';
+            
+            spanElement.parentNode.insertBefore(input, spanElement);
+            spanElement.style.display = 'none';
+            input.focus();
+            input.select();
+
+            const applyChange = (save) => {
+                if (save) {
+                    let newVal = input.value.trim();
+                    let casted = newVal;
+                    
+                    if (typeof originalValue === 'number') casted = Number(newVal);
+                    else if (typeof originalValue === 'boolean') casted = newVal.toLowerCase() === 'true';
+                    else if (originalValue === null) casted = newVal === '' ? null : newVal;
+
+                    setPathValue(selectedRowOriginalData, path, casted);
+                    renderJsonTreeViewer(selectedRowOriginalData);
+                } else {
+                    input.parentNode.removeChild(input);
+                    spanElement.style.display = 'inline';
+                }
+            };
+
+            input.onblur = () => applyChange(true);
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') applyChange(true);
+                if (e.key === 'Escape') applyChange(false);
+            };
+        }
+
+        // Deep set values in objects given an array path e.g. ['nested', 'myKey']
+        function setPathValue(obj, path, value) {
+            let current = obj;
+            for (let i = 0; i < path.length - 1; i++) {
+                const step = path[i];
+                current = current[step];
+            }
+            current[path[path.length - 1]] = value;
+        }
+
+        function deletePathInDrawerObj(path) {
+            if (path.length === 0) return;
+            
+            let current = selectedRowOriginalData;
+            for (let i = 0; i < path.length - 1; i++) {
+                const step = path[i];
+                current = current[step];
+            }
+            
+            const lastStep = path[path.length - 1];
+            if (Array.isArray(current)) {
+                current.splice(Number(lastStep), 1);
+            } else {
+                delete current[lastStep];
+            }
+
+            renderJsonTreeViewer(selectedRowOriginalData);
+            showToast('Field deleted locally. Save changes to upload.', 'warning');
+        }
+
+        function addNestedProperty(path, isParentArray) {
+            let key = '';
+            if (!isParentArray) {
+                key = prompt("Enter property key:");
+                if (!key) return;
+            }
+
+            const valStr = prompt("Enter property value (strings must be in quotes, e.g. \"text\" or numeric value like 100 or objects like {}):");
+            if (valStr === null) return;
+            
+            let parsedVal;
+            try {
+                parsedVal = JSON.parse(valStr);
+            } catch(e) {
+                // If it fails json parse, treat it as a literal string
+                parsedVal = valStr;
+            }
+
+            let current = selectedRowOriginalData;
+            path.forEach(step => {
+                current = current[step];
+            });
+
+            if (isParentArray) {
+                current.push(parsedVal);
+            } else {
+                current[key] = parsedVal;
+            }
+
+            renderJsonTreeViewer(selectedRowOriginalData);
+            showToast('Field added locally. Save changes to upload.', 'warning');
+        }
+
+        // Save detailed updates back to Firebase
+        async function saveDrawerRecordChanges() {
+            if (!selectedRowId || !activeTable || !idToken) return;
+            showLoader(true);
+            try {
+                const url = `${dbConfig.databaseUrl}/${activeTable}/${selectedRowId}.json?auth=${idToken}`;
+                await fetchAPI(url, 'PUT', selectedRowOriginalData);
+                
+                // Update locally
+                activeData[selectedRowId] = selectedRowOriginalData;
+                
+                showToast(`Record /${activeTable}/${selectedRowId} updated successfully!`, 'success');
+                parseDataToGrid();
+                closeDrawer();
+            } catch(e) {
+                showToast(`Failed to save: ${e.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // Delete row record
+        async function deleteDrawerRecord() {
+            if (!selectedRowId || !activeTable || !idToken) return;
+            if (!confirm(`Are you sure you want to delete the record "${selectedRowId}"? This action is irreversible.`)) return;
+
+            showLoader(true);
+            try {
+                const url = `${dbConfig.databaseUrl}/${activeTable}/${selectedRowId}.json?auth=${idToken}`;
+                await fetchAPI(url, 'DELETE');
+                
+                // Update local memory
+                if (Array.isArray(activeData)) {
+                    activeData[Number(selectedRowId)] = null;
+                } else {
+                    delete activeData[selectedRowId];
+                }
+
+                showToast(`Record "${selectedRowId}" deleted successfully!`, 'success');
+                parseDataToGrid();
+                closeDrawer();
+                loadDatabaseSchema(); // update lists counts
+            } catch(e) {
+                showToast(`Deletion failed: ${e.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        // ========== NEW RECORD MODALS (CREATE) ==========
+        function openAddRecordModal() {
+            if (!activeTable) return;
+            
+            document.getElementById('modalTitleText').textContent = `Add record to /${activeTable}`;
+            document.getElementById('newRecordId').value = '';
+            document.getElementById('newRecordIdJson').value = '';
+            document.getElementById('newRecordJsonArea').value = '';
+            
+            // Build dynamic form fields from existing schema
+            const fieldsContainer = document.getElementById('dynamicFormFields');
+            fieldsContainer.innerHTML = '';
+            
+            // Grab columns omitting row ID
+            const cols = parsedColumns.filter(c => c !== '_id');
+            
+            if (cols.length === 0) {
+                fieldsContainer.innerHTML = `
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 10px;">
+                        No schema columns detected yet. Switch to "Raw JSON" to define values.
+                    </div>
+                `;
+            } else {
+                cols.forEach(col => {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'form-group';
+                    fieldDiv.innerHTML = `
+                        <label class="form-label">${col}</label>
+                        <input type="text" data-field="${col}" class="input-field dynamic-field-input" placeholder="Value for ${col}">
+                    `;
+                    fieldsContainer.appendChild(fieldDiv);
+                });
+            }
+
+            document.getElementById('addRecordModal').classList.add('open');
+            switchModalTab('form');
+        }
+
+        function closeAddRecordModal() {
+            document.getElementById('addRecordModal').classList.remove('open');
+        }
+
+        function switchModalTab(tab) {
+            activeModalTab = tab;
+            const buttons = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            buttons.forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(tab)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            contents.forEach(content => {
+                if (content.id === `modalTab${tab.charAt(0).toUpperCase() + tab.slice(1)}`) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+
+        async function submitNewRecord() {
+            if (!activeTable || !idToken) return;
+
+            let key = '';
+            let payload = {};
+
+            if (activeModalTab === 'form') {
+                key = document.getElementById('newRecordId').value.trim();
+                const inputs = document.querySelectorAll('.dynamic-field-input');
+                
+                inputs.forEach(input => {
+                    const col = input.getAttribute('data-field');
+                    const rawVal = input.value.trim();
+                    if (rawVal !== '') {
+                        // Cast variables if possible
+                        if (rawVal.toLowerCase() === 'true') payload[col] = true;
+                        else if (rawVal.toLowerCase() === 'false') payload[col] = false;
+                        else if (!isNaN(rawVal)) payload[col] = Number(rawVal);
+                        else {
+                            // string representation
+                            payload[col] = rawVal;
+                        }
+                    }
+                });
+            } else {
+                // JSON text area tab
+                key = document.getElementById('newRecordIdJson').value.trim();
+                const jsonText = document.getElementById('newRecordJsonArea').value.trim();
+                
+                const errorDiv = document.getElementById('jsonSyntaxError');
+                errorDiv.style.display = 'none';
+
+                if (!jsonText) {
+                    showToast('Please insert a JSON payload', 'warning');
+                    return;
+                }
+
+                try {
+                    payload = JSON.parse(jsonText);
+                } catch(e) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = `JSON Syntax error: ${e.message}`;
+                    return;
+                }
+            }
+
+            showLoader(true);
+            try {
+                let url = '';
+                let method = '';
+                
+                if (key) {
+                    // Specific key update (PUT)
+                    url = `${dbConfig.databaseUrl}/${activeTable}/${key}.json?auth=${idToken}`;
+                    method = 'PUT';
+                } else {
+                    // Generate random push key (POST)
+                    url = `${dbConfig.databaseUrl}/${activeTable}.json?auth=${idToken}`;
+                    method = 'POST';
+                }
+
+                const result = await fetchAPI(url, method, payload);
+                const assignedKey = key ? key : result.name;
+                
+                showToast(`Record "${assignedKey}" created successfully!`, 'success');
+                
+                // reload
+                await fetchTableData();
+                await loadDatabaseSchema(); // counts update
+                
+                closeAddRecordModal();
+            } catch(e) {
+                showToast(`Creation failed: ${e.message}`, 'error');
+            } finally {
+                showLoader(false);
+            }
+        }
+    </script>
+</body>
+</html>

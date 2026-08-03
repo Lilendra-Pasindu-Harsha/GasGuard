@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GasGuard ML Test Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0f1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00e676, #00bfa5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .subtitle { color: #64748b; font-size: 0.85rem; margin-bottom: 20px; }
+
+        .status-bar {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px; border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            font-size: 0.8rem; margin-bottom: 20px;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ef4444; animation: pulse 1.5s infinite;
+        }
+        .status-dot.connected { background: #22c55e; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #111827, #1a2332);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .card.full { grid-column: 1 / -1; }
+        .card-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .card-value { font-size: 2rem; font-weight: 700; }
+        .card-value.green { color: #00e676; }
+        .card-value.blue { color: #3b82f6; }
+        .card-value.amber { color: #f59e0b; }
+        .card-value.cyan { color: #06b6d4; }
+        .card-value.small { font-size: 1.2rem; }
+
+        /* Weight gauge */
+        .gauge-container {
+            position: relative;
+            width: 200px; height: 200px;
+            margin: 0 auto 16px;
+        }
+        .gauge-bg {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #00e676 0deg,
+                #00e676 calc(var(--pct) * 3.6deg),
+                #1e293b calc(var(--pct) * 3.6deg),
+                #1e293b 360deg
+            );
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.3s;
+        }
+        .gauge-inner {
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: #0f172a;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .gauge-kg { font-size: 2.2rem; font-weight: 800; color: #00e676; }
+        .gauge-pct { font-size: 0.9rem; color: #94a3b8; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn:hover { background: #334155; border-color: #00e676; color: #00e676; transform: scale(1.1); }
+        .btn:active { transform: scale(0.95); }
+        .btn.big { width: 64px; height: 64px; font-size: 1.8rem; }
+        .btn.danger { border-color: #ef4444; }
+        .btn.danger:hover { background: #7f1d1d; border-color: #ef4444; color: #ef4444; }
+
+        .step-label { font-size: 0.75rem; color: #64748b; }
+
+        /* Quick set buttons */
+        .quick-row {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+            max-width: 600px;
+        }
+        .quick-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .quick-btn:hover { background: #334155; color: #00e676; border-color: #00e676; }
+
+        /* Log */
+        .log-container {
+            width: 100%; max-width: 600px;
+            background: #111827;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px 16px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .log-entry { margin-bottom: 2px; }
+        .log-entry.success { color: #22c55e; }
+        .log-entry.error { color: #ef4444; }
+        .log-entry.info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+<h1>🔥 GasGuard ML Test Console</h1>
+<p class="subtitle">Push simulated sensor data to Firebase → Watch your mobile app update in real-time</p>
+
+<div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Disconnected</span>
+</div>
+
+<div class="card full" style="max-width:600px; margin-bottom:20px;">
+    <div class="card-label">Gas Cylinder Weight</div>
+    <div class="gauge-container">
+        <div class="gauge-bg" id="gauge" style="--pct: 100">
+            <div class="gauge-inner">
+                <div class="gauge-kg" id="weightDisplay">5.000</div>
+                <div class="gauge-pct" id="pctDisplay">100.0%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn big danger" onclick="changeWeight(-0.1)" title="-0.1 kg">−−</button>
+        <button class="btn" onclick="changeWeight(-0.01)" title="-0.01 kg">−</button>
+        <div style="text-align:center; min-width:60px;">
+            <div class="step-label">Step: 0.01 kg</div>
+        </div>
+        <button class="btn" onclick="changeWeight(+0.01)" title="+0.01 kg">+</button>
+        <button class="btn big" onclick="changeWeight(+0.1)" title="+0.1 kg">++</button>
+    </div>
+</div>
+
+<div class="quick-row">
+    <button class="quick-btn" onclick="setWeight(5.0)">Full (5.0 kg)</button>
+    <button class="quick-btn" onclick="setWeight(4.0)">4.0 kg</button>
+    <button class="quick-btn" onclick="setWeight(3.0)">3.0 kg</button>
+    <button class="quick-btn" onclick="setWeight(2.0)">2.0 kg</button>
+    <button class="quick-btn" onclick="setWeight(1.0)">1.0 kg</button>
+    <button class="quick-btn" onclick="setWeight(0.5)">Low (0.5 kg)</button>
+    <button class="quick-btn" onclick="setWeight(0.1)">Critical (0.1 kg)</button>
+    <button class="quick-btn" onclick="setWeight(0.0)">Empty (0.0 kg)</button>
+</div>
+
+<div class="dashboard">
+    <div class="card">
+        <div class="card-label">ML Predicted Days Left</div>
+        <div class="card-value green" id="daysLeft">--</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Daily Usage</div>
+        <div class="card-value blue" id="dailyUsage">0.12 kg</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Est. Monthly Cost</div>
+        <div class="card-value amber" id="monthlyCost">Rs. --</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Pushes Sent</div>
+        <div class="card-value cyan" id="pushCount">0</div>
+    </div>
+</div>
+
+<div class="log-container" id="logBox"></div>
+
+<script>
+// ========== CONFIG ==========
+const FIREBASE_API_KEY = "AIzaSyAnUdXb9dJzbqOF90RwgAxMdtHJzfchaSg";
+const FIREBASE_DB_URL = "https://gasguardkdu-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FIREBASE_EMAIL = "gasgurd@gmail.com";
+const FIREBASE_PASSWORD = "gasgurd";
+const DEVICE_ID = "gasguard-esp32-01";
+const UNIT_ID = "UNIT_001";
+const CYLINDER_CAPACITY = 5.0;
+const DAILY_USAGE = 0.12;
+const SL_5KG_PRICE = 1792;  // Sri Lanka Litro Gas 5kg cylinder price (Rs.) - July 2026
+
+// ========== ML MODEL PARAMS (extracted from trained model) ==========
+const ML_INTERCEPT = 29.96527777777778;
+const ML_COEF = [8.394085300553089, 8.39408530055309, -0.7895159092784456, 0.08851858820478908, 0.17551420026023434, 0.15826249334818598, -0.9659423255869282];
+const ML_MEANS = [2.596889330992135, 51.93778661984269, 0.08326608823971829, 3.0208333333333335, 0.2916666666666667, 0.0031659200310085087, 0.08311064751833207];
+const ML_SCALES = [1.4293800645613115, 28.587601291226235, 0.011996079985192252, 2.0257671729221225, 0.45452967144315476, 0.00461263663278823, 0.0014986029046067171];
+
+// ========== STATE ==========
+let idToken = null;
+let currentWeight = 5.0;
+let pushCount = 0;
+const startTime = Date.now();
+
+// ========== LOCAL ML INFERENCE ==========
+function predictDaysRemaining(weight) {
+    if (weight <= 0.1) return 0;
+    const gasPct = (weight / CYLINDER_CAPACITY) * 100.0;
+    const now = new Date();
+    const jsDay = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const pyDay = (jsDay + 6) % 7; // Convert to Python: 0=Mon, ..., 6=Sun
+    const weekend = pyDay >= 5 ? 1.0 : 0.0;
+    const consumptionRate = gasPct > 0 ? DAILY_USAGE / gasPct : 0;
+    const rollingAvg = DAILY_USAGE;
+
+    const features = [weight, gasPct, DAILY_USAGE, pyDay, weekend, consumptionRate, rollingAvg];
+
+    let prediction = ML_INTERCEPT;
+    for (let i = 0; i < features.length; i++) {
+        const scaled = Math.max(-3, Math.min(3, (features[i] - ML_MEANS[i]) / ML_SCALES[i]));
+        prediction += ML_COEF[i] * scaled;
+    }
+    return Math.max(0, Math.min(90, Math.round(prediction)));
+}
+
+// ========== UI ==========
+function updateUI() {
+    const pct = Math.max(0, Math.min(100, (currentWeight / CYLINDER_CAPACITY) * 100));
+    const days = predictDaysRemaining(currentWeight);
+    const cost = Math.round((DAILY_USAGE * 30 / CYLINDER_CAPACITY) * SL_5KG_PRICE);
+
+    document.getElementById('weightDisplay').textContent = currentWeight.toFixed(3);
+    document.getElementById('pctDisplay').textContent = pct.toFixed(1) + '%';
+    document.getElementById('gauge').style.setProperty('--pct', pct);
+    document.getElementById('daysLeft').textContent = days;
+    document.getElementById('dailyUsage').textContent = DAILY_USAGE.toFixed(2) + ' kg';
+    document.getElementById('monthlyCost').textContent = 'Rs. ' + cost.toLocaleString();
+    document.getElementById('pushCount').textContent = pushCount;
+
+    // Color gauge based on level
+    const gauge = document.getElementById('gauge');
+    if (pct > 50) {
+        gauge.style.background = `conic-gradient(#00e676 0deg, #00e676 ${pct*3.6}deg, #1e293b ${pct*3.6}deg, #1e293b 360deg)`;
+        document.getElementById('weightDisplay').style.color = '#00e676';
+    } else if (pct > 20) {
+        gauge.style.background = `conic-gradient(#f59e0b 0deg, #f59e0b ${pct*3.6}deg, #1e293b ${pct*3.6}deg, #1e293b 360deg)`;
+        document.getElementById('weightDisplay').style.color = '#f59e0b';
+    } else {
+        gauge.style.background = `conic-gradient(#ef4444 0deg, #ef4444 ${pct*3.6}deg, #1e293b ${pct*3.6}deg, #1e293b 360deg)`;
+        document.getElementById('weightDisplay').style.color = '#ef4444';
+    }
+}
+
+function addLog(msg, cls = '') {
+    const box = document.getElementById('logBox');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry ' + cls;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    box.prepend(entry);
+    if (box.children.length > 100) box.removeChild(box.lastChild);
+}
+
+// ========== FIREBASE ==========
+async function authenticate() {
+    document.getElementById('statusText').textContent = 'Connecting...';
+    addLog('Authenticating with Firebase...', 'info');
+    try {
+        const res = await fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+            { method: 'POST', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ email: FIREBASE_EMAIL, password: FIREBASE_PASSWORD, returnSecureToken: true }) }
+        );
+        const data = await res.json();
+        if (data.idToken) {
+            idToken = data.idToken;
+            document.getElementById('statusDot').classList.add('connected');
+            document.getElementById('statusText').textContent = 'Connected to Firebase';
+            addLog('Firebase connection established!', 'success');
+            return true;
+        }
+        addLog('Auth failed: ' + JSON.stringify(data.error), 'error');
+        return false;
+    } catch (e) {
+        addLog('Auth error: ' + e.message, 'error');
+        return false;
+    }
+}
+
+// Build a 7-day weight history ending at today's current weight
+function buildWeightHistory(todayWeight) {
+    const history = {};
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        // Simulate past weights: today = todayWeight, each prior day was ~0.08-0.15 kg heavier
+        const pastWeight = Math.min(5.0, todayWeight + (i * (0.08 + Math.random() * 0.07)));
+        history[key] = parseFloat(pastWeight.toFixed(3));
+    }
+    return history;
+}
+
+async function pushToFirebase() {
+    if (!idToken) { addLog('Not authenticated!', 'error'); return; }
+
+    const pct = Math.max(0, Math.min(100, (currentWeight / CYLINDER_CAPACITY) * 100));
+    const days = predictDaysRemaining(currentWeight);
+    // Monthly cost = (daily_usage_kg * 30_days / 5kg_per_cylinder) * price_per_cylinder
+    const cost = Math.round((DAILY_USAGE * 30 / CYLINDER_CAPACITY) * SL_5KG_PRICE);
+    const ts = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+
+    // Push to /gas_stats/UNIT_001 (the path the app listens to)
+    const statsPayload = {
+        unitId: UNIT_ID,
+        deviceId: DEVICE_ID,
+        currentWeight: parseFloat(currentWeight.toFixed(3)),
+        gasLevel: Math.round(150 + currentWeight * 10),
+        gasPercentage: parseFloat(pct.toFixed(2)),
+        leakDetected: false,
+        leakPercentage: 0.0,
+        systemStatus: "NORMAL",
+        temperature: 28.5,
+        timestamp: ts,
+        valveClosed: false,
+        dailyUsage: DAILY_USAGE,
+        daysRemaining: days,
+        estimatedCost: cost,
+        capacity: "5kg",
+        monthlyCost: [
+            {month: "Jan", cost: 1290}, {month: "Feb", cost: 1435},
+            {month: "Mar", cost: 1148}, {month: "Apr", cost: 1362},
+            {month: "May", cost: 1506}, {month: "Jun", cost: cost}
+        ],
+        history: buildWeightHistory(currentWeight)
+    };
+
+    // Push to /devices/.../latest — matches SensorTest.ino writeFirebaseStatus() exactly
+    const devicePayload = {
+        deviceId: DEVICE_ID,
+        gasLevel: Math.round(150 + currentWeight * 10),
+        gasThreshold: 800,
+        rawADC: Math.round(397352 + currentWeight * 92946),
+        gasWeightKg: parseFloat(currentWeight.toFixed(3)),
+        cylinderWeightKg: parseFloat((currentWeight + 8.6).toFixed(3)),
+        gasPercentage: parseFloat(pct.toFixed(2)),
+        temperatureC: 28.5,
+        humidityPercent: 65.0,
+        gasDetected: false,
+        alarmActive: false,
+        valveState: "OPEN",
+        weightState: currentWeight >= 0.2 ? "STABLE" : "IDLE",
+        uptimeSeconds: Math.round((Date.now() - startTime) / 1000),
+        updatedAt: Date.now()
+    };
+
+    try {
+        const [r1, r2] = await Promise.all([
+            fetch(`${FIREBASE_DB_URL}/gas_stats/${UNIT_ID}.json?auth=${idToken}`, {
+                method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(statsPayload)
+            }),
+            fetch(`${FIREBASE_DB_URL}/devices/${DEVICE_ID}/latest.json?auth=${idToken}`, {
+                method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(devicePayload)
+            })
+        ]);
+
+        if (r1.ok && r2.ok) {
+            pushCount++;
+            updateUI();
+            addLog(`PUSHED → Weight: ${currentWeight.toFixed(3)} kg | ${pct.toFixed(1)}% | ML Prediction: ${days} days`, 'success');
+        } else {
+            const err = await r1.text();
+            addLog('Push failed: ' + err, 'error');
+        }
+    } catch (e) {
+        addLog('Push error: ' + e.message, 'error');
+    }
+}
+
+// ========== ACTIONS ==========
+function changeWeight(delta) {
+    currentWeight = Math.max(0, Math.min(5.5, parseFloat((currentWeight + delta).toFixed(3))));
+    updateUI();
+    pushToFirebase();
+}
+
+function setWeight(w) {
+    currentWeight = w;
+    updateUI();
+    pushToFirebase();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === '+' || e.key === '=') { e.preventDefault(); changeWeight(0.01); }
+    if (e.key === 'ArrowDown' || e.key === '-') { e.preventDefault(); changeWeight(-0.01); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); changeWeight(0.1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); changeWeight(-0.1); }
+});
+
+// ========== INIT ==========
+updateUI();
+authenticate();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "839530937364",
+    "firebase_url": "https://gasguardkdu-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "gasguardkdu",
+    "storage_bucket": "gasguardkdu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839530937364:android:02ff5cb5a0b8066ebc7b01",
+        "android_client_info": {
+          "package_name": "com.example.gasml"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839530937364-6i931soht4tcgm7o06qoehne2ru8bd0p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADHrlsOBQ8Tf-QcPycb0JkcvMKFm3Dzrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839530937364-6i931soht4tcgm7o06qoehne2ru8bd0p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,18 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "gas_stats": {
+      ".indexOn": ["unitId"]
+    },
+    "orders": {
+      ".indexOn": ["userId", "timestamp"]
+    },
+    "chats": {
+      ".indexOn": ["chatId", "timestamp"]
+    },
+    "conversations": {
+      ".indexOn": ["lastTimestamp"]
+    }
+  }
+}

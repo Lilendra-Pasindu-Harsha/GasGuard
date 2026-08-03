@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.GasML" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0B131A</item>
+        <item name="android:windowBackground">#0B131A</item>
+    </style>
+</resources>

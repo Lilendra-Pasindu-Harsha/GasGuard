@@ -1,0 +1,186 @@
+{
+    "devices": {
+    "gasguard-esp32-01": {
+      "latest": {
+        "deviceId": "gasguard-esp32-01",
+        "gasLevel": 0,
+        "gasThreshold": 700,
+        "gasWeightKg": 0,
+        "temperatureC": 0,
+        "humidityPercent": 0,
+        "gasDetected": false,
+        "alarmActive": false,
+        "valveState": "OPEN",
+        "uptimeSeconds": 0,
+        "updatedAt": 0
+      },
+      "events": {
+        "sample_event": {
+          "type": "system_initialized",
+          "message": "GasGuard database initialized.",
+          "gasLevel": 0,
+          "gasThreshold": 700,
+          "temperatureC": 0,
+          "humidityPercent": 0,
+          "gasWeightKg": 0,
+          "valveState": "OPEN",
+          "createdAt": 0
+        }
+      },
+      "commands": {
+        "valveState": {
+          "valveState": "OPEN",
+          "requestedAt": 0
+        },
+        "gasThreshold": {
+          "gasThreshold": 700,
+          "requestedAt": 0
+        }
+      }
+    }
+  },
+  "system": {
+    "name": "GasGuard",
+    "activeDeviceId": "gasguard-esp32-01",
+    "createdAt": 0
+  },
+
+  "customers": {
+    "JRE6z2ktx1UeCFAlYrYtKLOGLue2": {
+      "uid": "JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "name": "Pasindu",
+      "email": "customer01@gmail.com",
+      "role": "Customer",
+      "phoneNumber": "+94710000001",
+      "address": "KDU, Ratmalana, Sri Lanka",
+      "unitId": "UNIT_001"
+    }
+  },
+  "dealers": {
+    "Cmje4qn6KNV0TGL2us9mm7hsKPD3": {
+      "uid": "Cmje4qn6KNV0TGL2us9mm7hsKPD3",
+      "name": "Pasindu's Dealer",
+      "email": "dealer03@gmail.com",
+      "role": "Dealer",
+      "phoneNumber": "+94710000002",
+      "address": "Colombo Gas Distribution Center",
+      "unitId": null
+    }
+  },
+  "gas_stats": {
+    "UNIT_001": {
+      "unitId": "UNIT_001",
+      "deviceId": "gasguard-esp32-01",
+      "currentWeight": 5.0,
+      "gasLevel": 100,
+      "gasPercentage": 100.0,
+      "leakDetected": false,
+      "leakPercentage": 0.0,
+      "systemStatus": "NORMAL",
+      "temperature": 27.5,
+      "timestamp": "2026-06-20T00:00:00Z",
+      "valveClosed": false,
+      "dailyUsage": 0.12,
+      "daysRemaining": 41,
+      "estimatedCost": 1200.0,
+      "capacity": "5kg",
+      "monthlyCost": [
+        { "month": "Jan", "cost": 1050 },
+        { "month": "Feb", "cost": 1180 },
+        { "month": "Mar", "cost": 1120 },
+        { "month": "Apr", "cost": 1200 },
+        { "month": "May", "cost": 1160 },
+        { "month": "Jun", "cost": 1200 }
+      ]
+    }
+  },
+  "orders": {
+    "order_001": {
+      "id": "order_001",
+      "userId": "JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "userName": "Pasindu",
+      "cylinderType": "Standard 5 kg",
+      "quantity": 1,
+      "totalPrice": 1200.0,
+      "status": "Pending",
+      "timestamp": 1781913600000,
+      "address": "KDU, Ratmalana, Sri Lanka",
+      "paymentMethod": "Cash on delivery",
+      "safeQuantity": 1,
+      "safeTimestamp": 1781913600000,
+      "safeTotalPrice": 1200.0,
+      "latitude": 6.8207,
+      "longitude": 79.8867,
+      "mapLocationUrl": "https://www.google.com/maps/search/?api=1&query=6.8207,79.8867"
+    }
+  },
+  "chats": {
+    "message_001": {
+      "id": "message_001",
+      "chatId": "Cmje4qn6KNV0TGL2us9mm7hsKPD3_JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "senderId": "JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "receiverId": "Cmje4qn6KNV0TGL2us9mm7hsKPD3",
+      "text": "Hello, I need a refill for UNIT_001.",
+      "timestamp": 1781913600000,
+      "isFromUser": true
+    }
+  },
+  "conversations": {
+    "Cmje4qn6KNV0TGL2us9mm7hsKPD3_JRE6z2ktx1UeCFAlYrYtKLOGLue2": {
+      "chatId": "Cmje4qn6KNV0TGL2us9mm7hsKPD3_JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "participantIds": [
+        "Cmje4qn6KNV0TGL2us9mm7hsKPD3",
+        "JRE6z2ktx1UeCFAlYrYtKLOGLue2"
+      ],
+      "participantNames": {
+        "Cmje4qn6KNV0TGL2us9mm7hsKPD3": "Pasindu's Dealer",
+        "JRE6z2ktx1UeCFAlYrYtKLOGLue2": "Pasindu"
+      },
+      "lastMessage": "Hello, I need a refill for UNIT_001.",
+      "lastTimestamp": 1781913600000,
+      "lastSenderId": "JRE6z2ktx1UeCFAlYrYtKLOGLue2",
+      "unreadCount": {
+        "Cmje4qn6KNV0TGL2us9mm7hsKPD3": 1,
+        "JRE6z2ktx1UeCFAlYrYtKLOGLue2": 0
+      }
+    }
+  },
+  "gasguard": {
+    "appInfo": {
+      "projectId": "gasguardkdu",
+      "version": "2.1.0",
+      "author": "WALP Harsha",
+      "updatedAt": "2026-06-26T00:00:00.000Z"
+    },
+    "metrics": {
+      "r2Score": 96.8,
+      "mae": 1.47,
+      "rmse": 1.92,
+      "mape": 4.2,
+      "datasetSize": 60,
+      "crossValidationMean": 95.4
+    },
+    "latestPrediction": {
+      "predictionId": "pred_001",
+      "gasWeightKg": 2.04,
+      "predictedDays": 17,
+      "actualDays": 17,
+      "errorDays": 0,
+      "createdAt": "2026-06-26T00:00:00.000Z"
+    },
+    "realtimeDemo": {
+      "demo1": { "day": 1, "gas": 2.50, "usage": 0.12, "daysLeft": 21, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "demo2": { "day": 2, "gas": 2.38, "usage": 0.11, "daysLeft": 20, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "demo3": { "day": 3, "gas": 2.27, "usage": 0.13, "daysLeft": 18, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "demo4": { "day": 4, "gas": 2.14, "usage": 0.10, "daysLeft": 19, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "demo5": { "day": 5, "gas": 2.04, "usage": 0.12, "daysLeft": 17, "createdAt": "2026-06-26T00:00:00.000Z" }
+    },
+    "realtimeSamples": {
+      "sample_001": { "day": 1, "gas": 2.50, "usage": 0.12, "daysLeft": 21, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample_002": { "day": 2, "gas": 2.38, "usage": 0.11, "daysLeft": 20, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample_003": { "day": 3, "gas": 2.27, "usage": 0.13, "daysLeft": 18, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample_004": { "day": 4, "gas": 2.14, "usage": 0.10, "daysLeft": 19, "createdAt": "2026-06-26T00:00:00.000Z" },
+      "sample_005": { "day": 5, "gas": 2.04, "usage": 0.12, "daysLeft": 17, "createdAt": "2026-06-26T00:00:00.000Z" }
+    }
+  }
+}

@@ -75,6 +75,8 @@ GasGuard is a smart LPG monitoring and safety system designed for households and
 | Testing R² Score | 98.83% |
 | Prediction Error | MAE: 1.618 days, RMSE: 1.877 days |
 
+WATCH VIDEO = https://www.capcut.com/editor/DFC981D9-8CB1-4FFD-B776-7D651037730F?workspaceId=7651768553015820309&spaceId=7651767861173715985&utm_medium=Product&utm_source=draftshare&utm_campaign=link
+
 ### Input Features
 
 1. `gas_weight_kg`
@@ -101,3 +103,4 @@ Days_Remaining =
 - 60.2001(usage_velocity)
 - 277.5059(rolling_avg_7)
 - 0.0240(days_since_refill)
+

@@ -424,7 +424,7 @@ VALVE CLOSED
 # 🏗️ Prototype Development
 
 <p align="center">
-  <img src="assets/gasguard-prototype.jpg" width="650" alt="GasGuard Prototype">
+  <img src="assets/gasguard-prototype.jpeg" width="650" alt="GasGuard Prototype">
 </p>
 
 The final prototype was developed using a custom wooden structure to support:
@@ -777,21 +777,21 @@ Any real-world deployment should follow applicable electrical, fire, and LPG saf
 <table>
   <tr>
     <td align="center">
-      <img src="assets/gasguard-prototype.jpg" width="350"><br>
+      <img src="assets/gasguard-prototype.jpeg" width="350"><br>
       <b>GasGuard Prototype</b>
     </td>
     <td align="center">
-      <img src="assets/gasguard-mobile-alert.jpg" width="190"><br>
+      <img src="assets/gasguard-mobile-alert.jpeg" width="190"><br>
       <b>Mobile Gas Leak Alert</b>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="assets/gasguard-exhibition.jpg" width="280"><br>
+      <img src="assets/gasguard-exhibition.jpeg" width="280"><br>
       <b>Individual Design Project</b>
     </td>
     <td align="center">
-      <img src="assets/gasguard-qr.jpg" width="280"><br>
+      <img src="assets/gasguard-qr.jpeg" width="280"><br>
       <b>Scan to Explore GasGuard</b>
     </td>
   </tr>

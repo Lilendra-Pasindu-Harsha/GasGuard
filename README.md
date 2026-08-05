@@ -15,9 +15,9 @@ IoT & Machine Learning-Based LPG Monitoring and Safety System
 ---
 
 <p align="center">
-  <img src="assets/gasguard-prototype.jpg" width="55%" alt="GasGuard Prototype">
+  <img src="assets/gasguard-prototype.jpeg" width="55%" alt="GasGuard Prototype">
   &nbsp;&nbsp;
-  <img src="assets/gasguard-mobile-alert.jpg" width="25%" alt="GasGuard Mobile Application">
+  <img src="assets/gasguard-mobile-alert.jpeg" width="25%" alt="GasGuard Mobile Application">
 </p>
 
 <p align="center">

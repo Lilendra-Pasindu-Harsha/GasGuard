@@ -9,7 +9,7 @@ IoT & Machine Learning-Based LPG Monitoring and Safety System
 </p>
 
 <p align="center">
-  Real-Time Monitoring • Gas Leak Detection • Automatic Valve Control • ML Depletion Prediction
+  <b>Real-Time LPG Monitoring • Gas Leak Detection • Automatic Valve Control • ML Depletion Prediction</b>
 </p>
 
 ---
@@ -40,39 +40,42 @@ IoT & Machine Learning-Based LPG Monitoring and Safety System
 
 **GasGuard** is an IoT and Machine Learning-based LPG monitoring and safety system developed for households and small kitchens.
 
-The system combines an **ESP32 DevKit V1**, gas and weight sensors, Firebase cloud services, a React Native mobile application, automatic valve control, and a Machine Learning model to provide:
+The system combines an **ESP32 DevKit V1**, gas and weight sensors, Firebase cloud services, a React Native mobile application, automatic valve control, and a Machine Learning model.
+
+GasGuard provides:
 
 - Real-time LPG level monitoring
+- LPG weight measurement
 - Gas leak detection
-- Automatic valve shutoff
+- Automatic gas valve shutoff
 - Temperature and humidity monitoring
+- Mobile safety alerts
 - LPG usage analysis
 - Monthly cost estimation
-- Depletion prediction
-- Refill-date estimation
-- Mobile safety notifications
+- ML-based depletion prediction
+- Predicted refill date
 - LPG refill ordering
+- Google Maps location sharing
 - Customer–supplier communication
-
-The main goal of GasGuard is to provide a low-cost smart LPG safety and monitoring solution while improving user awareness of cylinder condition and remaining gas.
+- Supplier order and inventory management
 
 ---
 
 # 🎯 Project Objectives
 
-- Monitor the remaining LPG level in real time.
+- Monitor remaining LPG level in real time.
 - Detect LPG leakage using the MQ-5 sensor.
-- Automatically shut off the gas valve during a leak.
-- Monitor cylinder weight using a load cell and HX711.
-- Display local system information on an I²C LCD.
+- Measure cylinder weight using a load cell and HX711.
+- Automatically close the gas valve during a leak.
 - Monitor temperature and humidity.
-- Send live sensor data to Firebase.
+- Display system information using an I²C LCD.
+- Upload sensor data to Firebase.
 - Provide remote monitoring through a mobile application.
-- Analyse LPG usage and monthly cost.
-- Predict the remaining cylinder usage time using Machine Learning.
+- Analyse LPG usage and cost.
+- Predict remaining cylinder usage time.
 - Estimate the next refill date.
-- Support LPG refill ordering and delivery management.
-- Enable customer–supplier communication.
+- Allow customers to place LPG refill orders.
+- Support communication between customers and suppliers.
 
 ---
 
@@ -80,40 +83,39 @@ The main goal of GasGuard is to provide a low-cost smart LPG safety and monitori
 
 ## 🔍 Real-Time LPG Monitoring
 
-GasGuard continuously monitors the current LPG cylinder condition.
-
-The system displays:
+GasGuard continuously monitors the LPG cylinder and displays:
 
 - LPG weight
 - Gas percentage
 - Gas leak status
 - Temperature
 - Humidity
-- Valve status
-- Device status
+- Valve condition
 - Usage history
-- Predicted days remaining
+- Estimated days remaining
+- Predicted refill date
 
-Sensor information is transmitted from the ESP32 to **Firebase Realtime Database** through Wi-Fi.
+Sensor data are transmitted from the ESP32 to **Firebase Realtime Database** through Wi-Fi.
 
 ---
 
-## 🚨 Gas Leak Detection & Safety Control
+## 🚨 Gas Leak Detection
 
-The **MQ-5 gas sensor** continuously monitors the surrounding environment for LPG leakage.
+The **MQ-5 gas sensor** continuously monitors the surrounding environment.
 
-When the configured gas threshold is exceeded:
+When the configured gas threshold is exceeded, GasGuard performs an automatic safety response.
 
-1. The system detects the unsafe condition.
-2. The green status LED turns off.
-3. The red warning LED activates.
-4. The buzzer provides an audible warning.
-5. The LCD displays a gas-leak warning.
-6. The MG995 servo closes the gas valve.
-7. The leak event is recorded in Firebase.
-8. The mobile application displays a critical safety alert.
+### Safety Actions
 
-The main safety response is performed locally by the ESP32 and therefore does not depend completely on internet availability.
+- Green LED turns OFF
+- Red warning LED activates
+- Buzzer alarm activates
+- LCD displays leak warning
+- MG995 servo closes the LPG valve
+- Gas leak event is recorded in Firebase
+- Mobile application displays a critical notification
+
+The main safety response is processed locally by the ESP32, allowing leak detection and valve control even if the internet connection is unavailable.
 
 ### Gas Detection Logic
 
@@ -125,140 +127,146 @@ The main safety response is performed locally by the ESP32 and therefore does no
 
 ---
 
-## ⚙️ Automatic Valve Control
+# ⚙️ Automatic Valve Control
 
-An **MG995 servo motor** is mechanically connected to the LPG valve mechanism.
-
-The servo provides automatic valve control during a detected gas leak.
+The **MG995 servo motor** controls the LPG valve during unsafe conditions.
 
 ```text
 Normal Condition
-        ↓
+       ↓
 Valve Open
-        ↓
-Gas Leak Detected
-        ↓
-Buzzer + Red LED
-        ↓
-Servo Activated
-        ↓
+       ↓
+MQ-5 Detects Gas Leak
+       ↓
+Red LED + Buzzer
+       ↓
+LCD Warning
+       ↓
+MG995 Servo Activated
+       ↓
 Valve Closed
-        ↓
-Firebase Event + Mobile Alert
+       ↓
+Firebase Event
+       ↓
+Mobile Alert
 ```
 
-This provides an additional automatic safety response instead of depending only on a warning alarm.
+This provides an automatic physical safety response instead of relying only on an alarm.
 
 ---
 
 # 📱 GasGuard Mobile Application
 
 <p align="center">
-  <img src="assets/gasguard-mobile-alert.jpg" width="320" alt="GasGuard Mobile Gas Leak Alert">
+  <img src="assets/gasguard-mobile-alert.jpeg" width="320" alt="GasGuard Mobile Gas Leak Alert">
 </p>
 
 The GasGuard mobile application was developed using **React Native**.
 
-The application provides both customer-side monitoring and supplier-side management functions.
+It provides both customer-side monitoring and supplier-side management.
 
-### Customer Features
+## Customer Features
 
 - Live LPG level
 - Cylinder weight
-- Gas leakage status
-- Valve condition
+- Gas leak status
+- Valve status
 - Temperature and humidity
 - Usage statistics
 - Monthly cost estimation
 - Predicted days remaining
 - Predicted refill date
-- Safety notifications
+- Gas leak notifications
 - Refill ordering
 - Payment selection
 - Google Maps location sharing
+- Order history
 - Activity history
 - Customer–supplier chat
 
-### Supplier Features
+## Supplier Features
 
 - Supplier dashboard
-- Incoming LPG orders
+- Incoming orders
 - Order acceptance
 - Out-for-delivery updates
-- Delivered-order confirmation
+- Delivery confirmation
 - Inventory monitoring
 - Sales information
 - Customer communication
 - Delivery-location viewing
+- Order status management
 
 ---
 
 # ☁️ Firebase Cloud Integration
 
-GasGuard uses **Firebase Realtime Database** as the main cloud data platform.
+GasGuard uses **Firebase Realtime Database** to connect the embedded hardware and mobile application.
 
-The ESP32 periodically uploads sensor and system information to Firebase.
-
-Typical database information includes:
+The ESP32 periodically uploads:
 
 ```text
-gasguard/
-├── gas_weight
-├── gas_percentage
-├── gas_status
-├── temperature
-├── humidity
-├── valve_state
-└── device_status
+LPG Weight
+Gas Percentage
+Temperature
+Humidity
+Gas Status
+Valve Status
+Device Status
+Safety Events
+```
 
-orders/
+The Firebase database also manages:
+
+```text
 customers/
 dealers/
+devices/
+gas_stats/
+gasguard/
 inventory/
+orders/
 chats/
 conversations/
-gas_stats/
 system/
 ```
 
-Normal sensor information is synchronized periodically, while important safety events are uploaded when hazardous conditions are detected.
-
-The React Native application reads this data to provide near real-time monitoring.
+Normal sensor readings are synchronized periodically, while important gas-leak events are transmitted during hazardous conditions.
 
 ---
 
-# 🤖 Machine Learning-Based LPG Depletion Prediction
+# 🤖 Machine Learning-Based Depletion Prediction
 
-GasGuard includes a **Multiple Linear Regression** model to predict the number of LPG usage days remaining.
+GasGuard includes a **Multiple Linear Regression** model to estimate the number of LPG usage days remaining.
 
-The Machine Learning pipeline uses historical LPG usage information and engineered features to learn the relationship between cylinder condition and depletion time.
+The model uses historical LPG consumption data and engineered features to identify gas usage patterns and estimate cylinder depletion time.
 
 ---
 
-## 📊 Machine Learning Dataset
+## 🧠 Machine Learning Model
 
 | Metric | Value |
 |---|---|
-| Prediction Purpose | LPG depletion-time prediction |
+| Prediction Purpose | LPG cylinder depletion-time prediction |
 | Model Type | Multiple Linear Regression |
 | Dataset Size | 180 records |
-| Input Features | 9 |
+| Input Features | 9 engineered features |
 | Training / Testing Split | 80% / 20% |
 | Feature Scaling | StandardScaler |
-| Optimization | Batch Gradient Descent |
+| Optimization Method | Batch Gradient Descent |
 | Training Epochs | 100 |
 | Learning Rate | 0.03 |
 | Testing R² Score | 98.83% |
 | MAE | 1.618 days |
 | RMSE | 1.877 days |
 | MAPE | 12.99% |
-| 5-Fold CV | 93.16% ± 10.93% |
+| 5-Fold Cross-Validation | 93.16% ± 10.93% |
 
 ---
 
-## 🧠 Engineered Features
+## 📊 Machine Learning Input Features
 
-The model uses nine predictive features:
+The final model uses nine predictive features:
 
 1. `gas_weight_kg`
 2. `gas_percentage`
@@ -278,19 +286,7 @@ days_remaining
 
 ---
 
-## 📈 Model Training
-
-The model was optimized using **Batch Gradient Descent for 100 epochs**.
-
-Several learning rates were evaluated during development.
-
-The selected learning rate was:
-
-```text
-Learning Rate = 0.03
-```
-
-The training process included:
+## 📈 Machine Learning Pipeline
 
 ```text
 Historical LPG Dataset
@@ -299,13 +295,17 @@ Data Cleaning
         ↓
 Feature Engineering
         ↓
-Train/Test Split
+9 Predictive Features
+        ↓
+80 / 20 Train-Test Split
         ↓
 StandardScaler
         ↓
 Multiple Linear Regression
         ↓
-100 Gradient Descent Epochs
+Batch Gradient Descent
+        ↓
+100 Training Epochs
         ↓
 Model Evaluation
         ↓
@@ -317,8 +317,6 @@ PKL Model Export
 ---
 
 ## 📐 Final Prediction Equation
-
-The final trained model produced the following prediction equation:
 
 ```text
 Days_Remaining =
@@ -334,7 +332,20 @@ Days_Remaining =
 - 0.0240(days_since_refill)
 ```
 
-> Note: `gas_percentage` is directly related to `gas_weight_kg` for the fixed cylinder capacity, creating strong correlation between these two features. Individual regression coefficients should therefore be interpreted carefully.
+> **Note:** Gas percentage is directly related to gas weight for a fixed 5 kg cylinder. Therefore, these two variables have strong correlation and their coefficients should not be interpreted independently.
+
+---
+
+# 📊 Model Comparison
+
+| Model | R² Score | MAE | RMSE | Improvement |
+|---|---:|---:|---:|---:|
+| Linear Regression | 98.5230% | 1.8255 days | 2.1117 days | Baseline |
+| Ridge (L2) | 98.5108% | 1.8288 days | 2.1204 days | -0.0121% |
+| Lasso (L1) | 98.5338% | 1.8199 days | 2.1040 days | +0.0108% |
+| Polynomial Degree 2 | 98.2314% | 1.8231 days | 2.3107 days | -0.2915% |
+
+Linear Regression was selected because it provides a strong balance between prediction accuracy, simplicity, interpretability, and low computational cost.
 
 ---
 
@@ -344,16 +355,16 @@ Days_Remaining =
 |---|---|
 | ESP32 DevKit V1 | Main controller and Wi-Fi communication |
 | MQ-5 Gas Sensor | LPG leakage detection |
-| 20 kg Load Cell | LPG cylinder weight measurement |
+| 20 kg Load Cell | Cylinder weight measurement |
 | HX711 Module | Load-cell signal amplification |
-| DHT22 | Temperature and humidity measurement |
-| MG995 Servo Motor | Automatic LPG valve control |
-| 16×2 I²C LCD | Local system information |
-| Active Buzzer | Audible leak warning |
-| Green LED | Safe-condition indication |
-| Red LED | Gas-leak warning |
-| LM2596 Buck Converter | DC voltage regulation |
-| Custom Wooden Structure | Prototype and valve mounting |
+| DHT22 Sensor | Temperature and humidity monitoring |
+| MG995 Servo Motor | Automatic valve control |
+| 16×2 I²C LCD | Local data display |
+| Active Buzzer | Gas leak alarm |
+| Green LED | Safe status |
+| Red LED | Leak warning |
+| LM2596 Buck Converter | Voltage regulation |
+| Custom Wooden Structure | Prototype housing and mounting |
 
 ---
 
@@ -376,31 +387,31 @@ Days_Remaining =
 
 # ⚡ Power Architecture
 
-The prototype uses regulated DC power for safe and stable operation.
-
 ```text
 230 V AC
-   ↓
-AC–DC Adapter
-   ↓
-Low-Voltage DC
-   ↓
-LM2596 Regulation
-   ↓
-System Power Rails
+    ↓
+AC-DC Adapter
+    ↓
+Low Voltage DC
+    ↓
+LM2596 Buck Converter
+    ↓
+Regulated DC Supply
+    ↓
+ESP32 + Sensors + Servo
 ```
 
-The MG995 servo is powered from a regulated supply line because of its higher current demand.
+The MG995 servo uses a regulated supply because of its higher current requirement.
 
-A **common ground** is maintained between the ESP32 and servo power system.
+A common ground is maintained between the ESP32 and servo power system.
 
 ---
 
 # 🖥️ Local LCD Interface
 
-The 16×2 I²C LCD provides local system information without requiring the mobile application.
+The 16×2 I²C LCD displays important system information locally.
 
-Typical information displayed includes:
+Typical information includes:
 
 ```text
 Gas Level
@@ -409,10 +420,10 @@ Temperature
 Humidity
 Gas Status
 Valve Status
-Leak Warning
+System Status
 ```
 
-During a hazardous condition:
+During a leak:
 
 ```text
 LEAK DETECTED!
@@ -421,133 +432,145 @@ VALVE CLOSED
 
 ---
 
-# 🏗️ Prototype Development
+# 🏗️ GasGuard Prototype
 
 <p align="center">
-  <img src="assets/gasguard-prototype.jpeg" width="650" alt="GasGuard Prototype">
+  <img src="assets/gasguard-prototype.jpeg" width="620" alt="GasGuard Prototype">
 </p>
 
-The final prototype was developed using a custom wooden structure to support:
+The final GasGuard prototype uses a custom wooden structure to support:
 
 - LPG cylinder placement
-- Load-cell measurement
-- Sensor mounting
-- ESP32 control hardware
-- LCD interface
-- Servo-valve mechanism
-- Wiring and power distribution
+- Load-cell platform
+- ESP32 controller
+- MQ-5 sensor
+- DHT22 sensor
+- LCD display
+- Buzzer and LEDs
+- Servo valve mechanism
+- Wiring and power components
 
-The structure was developed as a low-cost solution while allowing easy access during testing and calibration.
+The structure was developed as a low-cost and practical prototype for testing and demonstration.
 
 ---
 
 # 🎓 Individual Design Project
 
 <p align="center">
-  <img src="assets/gasguard-exhibition.jpg" width="430" alt="GasGuard Individual Design Project">
+  <img src="assets/gasguard-exhibition.jpeg" width="430" alt="GasGuard Individual Design Project">
 </p>
 
 GasGuard was developed as an **Individual Design Project in Electronics and Telecommunication Engineering**.
 
-The project provided hands-on experience across several engineering areas:
+The project combines knowledge from:
 
 - Embedded Systems
+- Internet of Things
+- Electronics
 - Sensor Interfacing
-- IoT
+- Automatic Control
 - Cloud Computing
 - Machine Learning
 - Mobile Application Development
-- Automatic Control
-- Hardware Prototyping
 - Data Analysis
 - System Testing
+- Hardware Prototyping
 
 ---
 
 # 🧪 Technical Challenges & Solutions
 
-## 1. Unstable Load Cell Readings
+## 1️⃣ Unstable Load Cell Readings
 
 The load cell produced changing readings due to vibration, uneven cylinder placement, electrical noise, and HX711 drift.
 
-The issue was reduced using:
+The issue was reduced through:
 
-- Calibration with known weights
+- Calibration using reference weights
 - Tare correction
-- Improved mechanical mounting
-- Central cylinder placement
+- Firm load-cell mounting
+- Correct cylinder placement
 - Software filtering
 
 ---
 
-## 2. Power Supply Instability
+## 2️⃣ Power Supply Instability
 
-Voltage drops caused unstable sensor readings and ESP32 resets.
+Voltage drops caused unstable sensor readings and occasional ESP32 resets.
 
-An **LM2596 buck converter** was used to provide a stable DC supply. The servo was powered through a suitable regulated line with a common ground.
+An **LM2596 buck converter** was used to provide a stable DC supply.
+
+The servo was connected through a suitable regulated power line with a common ground.
 
 ---
 
-## 3. I²C LCD Communication Issues
+## 3️⃣ I²C LCD Communication Issues
 
-The LCD initially displayed black blocks or no characters because of incorrect addressing and communication problems.
+The LCD initially displayed black blocks or no characters due to incorrect addressing and communication errors.
 
 The issue was solved by:
 
-- Running an I²C scanner
-- Selecting the correct LCD address
+- Using an I²C scanner
+- Finding the correct address
 - Setting the I²C clock to 100 kHz
 - Adjusting the contrast potentiometer
-- Checking SDA/SCL connections
+- Checking SDA and SCL connections
 - Checking solder joints
 
 ---
 
-## 4. MQ-5 Environmental Variations
+## 4️⃣ MQ-5 Environmental Variations
 
-MQ-5 readings changed with temperature, humidity, warm-up time, and surrounding air conditions.
+MQ-5 sensor readings changed with:
 
-The sensor was tested under different conditions and the detection threshold was adjusted to improve leak detection while reducing false alarms.
+- Temperature
+- Humidity
+- Warm-up time
+- Surrounding air conditions
+
+The sensor was tested under different conditions and the detection threshold was adjusted to improve leak detection and reduce false alarms.
 
 ---
 
-## 5. MG995 Servo Power & Mounting
+## 5️⃣ MG995 Servo Power & Mounting Issues
 
-The MG995 required high current during operation and caused voltage drops during early tests.
+The MG995 servo required high current and caused voltage drops during operation.
 
-Two servo motors were damaged during initial prototype testing due to an unsuitable power arrangement.
+Two servo motors were damaged during early testing due to an unsuitable power arrangement.
 
 The issue was solved using:
 
-- Regulated servo power
-- Separate servo supply line
+- Regulated 5 V servo supply
+- Separate servo power line
 - Common ground
 - Improved wiring
-- Custom wooden servo mounting
+- Custom wooden servo mount
 - Better valve alignment
 
 ---
 
-## 6. Limited Machine Learning Dataset
+## 6️⃣ Limited Machine Learning Dataset
 
-The Machine Learning model used **180 historical LPG records**, which limits its ability to represent every household and cylinder condition.
+The model was trained using only **180 historical records from a 5 kg LPG cylinder**.
 
-The model was improved using:
+This limits model generalization across different households and cylinder capacities.
+
+The issue was reduced by using:
 
 - Nine engineered features
-- 80/20 train-test split
+- 80/20 data split
 - StandardScaler
 - 100 Gradient Descent epochs
-- Learning-rate evaluation
+- Learning-rate optimization
 - 5-fold cross-validation
 
-Future development will use larger datasets covering different LPG cylinder capacities and household usage patterns.
+Future development will include larger datasets and different cylinder capacities.
 
 ---
 
 # 🧰 Technology Stack
 
-## Embedded & Hardware
+## 🔧 Embedded Systems
 
 ```text
 ESP32 DevKit V1
@@ -562,26 +585,26 @@ I²C LCD
 LM2596
 ```
 
-## Cloud
+## ☁️ Cloud
 
 ```text
 Firebase Realtime Database
-HTTPS
 Wi-Fi
+HTTPS
 ```
 
-## Mobile Application
+## 📱 Mobile
 
 ```text
 React Native
 JavaScript
-Kotlin / Java Android Modules
-Google Maps
+Kotlin / Java
+Google Maps API
 Android Foreground Services
 Mobile Notifications
 ```
 
-## Machine Learning
+## 🤖 Machine Learning
 
 ```text
 Python
@@ -595,7 +618,7 @@ Gradient Descent
 5-Fold Cross-Validation
 ```
 
-## Development Tools
+## 💻 Development Tools
 
 ```text
 Visual Studio Code
@@ -615,10 +638,10 @@ Firebase Console
 GasGuard/
 │
 ├── assets/
-│   ├── gasguard-prototype.jpg
-│   ├── gasguard-mobile-alert.jpg
-│   ├── gasguard-qr.jpg
-│   └── gasguard-exhibition.jpg
+│   ├── gasguard-prototype.jpeg
+│   ├── gasguard-mobile-alert.jpeg
+│   ├── gasguard-qr.jpeg
+│   └── gasguard-exhibition.jpeg
 │
 ├── Database/
 │   └── Firebase database resources
@@ -630,21 +653,21 @@ GasGuard/
 │   └── Android APK
 │
 ├── GasGuard_Diagnostics_Tools/
-│   └── Hardware and sensor diagnostic tools
+│   └── Sensor and system diagnostic tools
 │
 ├── GasGuard_ML/
-│   ├── Dataset
-│   ├── ML training notebook
-│   ├── Model evaluation results
+│   ├── Training dataset
+│   ├── ML notebook
+│   ├── Evaluation results
+│   ├── Model comparison results
 │   ├── gasguard_model.pkl
-│   ├── gasguard_scaler.pkl
-│   └── Performance plots
+│   └── gasguard_scaler.pkl
 │
 ├── NewFullcode/
 │   └── Main ESP32 firmware
 │
 ├── Testing_Codes/
-│   └── Individual hardware testing programs
+│   └── Hardware and sensor testing codes
 │
 ├── GasGuard_PCB Image.jpeg
 ├── LICENSE
@@ -653,32 +676,32 @@ GasGuard/
 
 ---
 
-# 🚀 Running GasGuard
+# 🚀 Running the Project
 
 ## 1️⃣ ESP32 Firmware
 
-1. Open the main firmware using Arduino IDE.
+1. Open the main firmware in Arduino IDE.
 2. Install the required ESP32 libraries.
-3. Configure Wi-Fi and Firebase credentials locally.
-4. Connect all sensors according to the ESP32 pin configuration.
-5. Select the ESP32 DevKit V1 board.
+3. Configure Firebase and Wi-Fi settings locally.
+4. Connect the hardware according to the pin table.
+5. Select **ESP32 DevKit V1**.
 6. Select the correct COM port.
 7. Upload the firmware.
-8. Open Serial Monitor to verify sensor values.
+8. Open Serial Monitor to check system operation.
 
-> ⚠️ Never commit Wi-Fi passwords, Firebase private credentials, or unrestricted API keys to a public GitHub repository.
+> ⚠️ Do not upload Wi-Fi passwords, Firebase secrets, or unrestricted API keys to GitHub.
 
 ---
 
-## 2️⃣ React Native Application
+## 2️⃣ React Native Mobile Application
 
-Navigate to the mobile application folder:
+Navigate to the mobile application:
 
 ```bash
 cd GasGuard_App
 ```
 
-Install dependencies:
+Install packages:
 
 ```bash
 npm install
@@ -690,7 +713,7 @@ Run the Android application:
 npx react-native run-android
 ```
 
-Firebase and Google Maps must be configured before running the complete application.
+Firebase and Google Maps should be configured before running the full application.
 
 ---
 
@@ -702,7 +725,7 @@ Navigate to:
 cd GasGuard_ML
 ```
 
-Install required Python packages:
+Install required packages:
 
 ```bash
 pip install numpy pandas scikit-learn matplotlib
@@ -714,7 +737,7 @@ Run the training script:
 python gasguard_model_training.py
 ```
 
-The training pipeline can generate:
+The ML pipeline can generate:
 
 ```text
 gasguard_model.pkl
@@ -727,51 +750,6 @@ gasguard_metrics.json
 
 ---
 
-# 🔮 Future Improvements
-
-Future development of GasGuard can include:
-
-- Larger real-world LPG datasets
-- 2.5 kg, 5 kg, and 12.5 kg cylinder support
-- Four-load-cell weighing platform
-- Li-ion battery backup
-- Battery percentage monitoring
-- Kalman filtering
-- Improved consumption prediction
-- Additional safety sensors
-- Servo current monitoring
-- Stronger Firebase authentication
-- Firebase App Check
-- Long-term household testing
-- Improved supplier delivery management
-
----
-
-# 🔐 Security Note
-
-Development credentials should never be included directly in public source code.
-
-Before publishing:
-
-- Remove Wi-Fi SSID and passwords
-- Remove Firebase private credentials
-- Restrict Google Maps API keys
-- Apply Firebase Authentication
-- Apply secure Realtime Database rules
-- Use environment/configuration files where possible
-
----
-
-# ⚠️ Safety Notice
-
-**GasGuard is an educational engineering prototype.**
-
-It is not a certified commercial or industrial LPG safety device and should not replace approved gas regulators, certified gas detectors, safety valves, or professional LPG inspections.
-
-Any real-world deployment should follow applicable electrical, fire, and LPG safety standards.
-
----
-
 # 📸 Project Gallery
 
 <table>
@@ -780,16 +758,19 @@ Any real-world deployment should follow applicable electrical, fire, and LPG saf
       <img src="assets/gasguard-prototype.jpeg" width="350"><br>
       <b>GasGuard Prototype</b>
     </td>
+
     <td align="center">
       <img src="assets/gasguard-mobile-alert.jpeg" width="190"><br>
       <b>Mobile Gas Leak Alert</b>
     </td>
   </tr>
+
   <tr>
     <td align="center">
       <img src="assets/gasguard-exhibition.jpeg" width="280"><br>
       <b>Individual Design Project</b>
     </td>
+
     <td align="center">
       <img src="assets/gasguard-qr.jpeg" width="280"><br>
       <b>Scan to Explore GasGuard</b>
@@ -799,35 +780,87 @@ Any real-world deployment should follow applicable electrical, fire, and LPG saf
 
 ---
 
+# 🎬 Project Video
+
+<p align="center">
+  <a href="https://www.capcut.com/editor/DFC981D9-8CB1-4FFD-B776-7D651037730F?workspaceId=7651768553015820309&spaceId=7651767861173715985&utm_medium=Product&utm_source=draftshare&utm_campaign=link">
+    ▶️ <b>Watch GasGuard Project Video</b>
+  </a>
+</p>
+
+---
+
 # 🔗 Explore GasGuard
 
 <p align="center">
-  <img src="assets/gasguard-qr.jpg" width="300" alt="GasGuard QR Code">
+  <img src="assets/gasguard-qr.jpeg" width="300" alt="GasGuard QR Code">
 </p>
 
 <p align="center">
-  <b>Scan the QR code to explore the GasGuard project.</b>
+  <b>Scan to explore the GasGuard project.</b>
 </p>
 
-### Repository
+### GitHub Repository
 
 ```text
 https://github.com/Lilendra-Pasindu-Harsha/GasGuard
 ```
 
-### Project Video
+---
 
-```text
-https://www.capcut.com/editor/DFC981D9-8CB1-4FFD-B776-7D651037730F?workspaceId=7651768553015820309&spaceId=7651767861173715985&utm_medium=Product&utm_source=draftshare&utm_campaign=link
-```
+# 🔮 Future Improvements
+
+- Collect a larger real-world LPG dataset.
+- Support 2.5 kg, 5 kg, and 12.5 kg cylinders.
+- Use four load cells for better weight distribution.
+- Add Li-ion battery backup.
+- Display battery percentage.
+- Apply Kalman filtering.
+- Improve depletion prediction.
+- Add additional safety sensors.
+- Monitor servo current and valve faults.
+- Improve Firebase authentication.
+- Enable Firebase App Check.
+- Perform long-term household testing.
+- Improve supplier delivery tracking.
+
+---
+
+# 🔐 Security
+
+Before publishing the project publicly:
+
+- Remove Wi-Fi passwords.
+- Remove Firebase private credentials.
+- Restrict Google Maps API keys.
+- Enable Firebase Authentication.
+- Apply secure Firebase database rules.
+- Use environment/configuration files.
+- Never commit secrets to GitHub.
+
+---
+
+# ⚠️ Safety Notice
+
+**GasGuard is an educational engineering prototype.**
+
+It is not a certified commercial or industrial LPG safety system.
+
+It should not replace:
+
+- Certified LPG detectors
+- Approved gas regulators
+- Certified safety valves
+- Professional LPG inspections
+- Applicable fire and electrical safety standards
 
 ---
 
 # 👨‍💻 Developer
 
-**WALP Harsha**
+### WALP Harsha
 
-Electronics & Telecommunication Engineering Undergraduate  
+**Electronics & Telecommunication Engineering Undergraduate**  
 General Sir John Kotelawala Defence University  
 Sri Lanka 🇱🇰
 
@@ -839,7 +872,7 @@ Internet of Things
 Machine Learning
 Electronics
 Telecommunication
-Cloud Integration
+Cloud Computing
 Mobile Application Development
 Automation
 ```
@@ -852,14 +885,14 @@ This project is distributed according to the terms provided in the repository's 
 
 ---
 
-<p align="center">
-  <b>🔥 GasGuard</b>
-</p>
+<h2 align="center">
+🔥 GasGuard
+</h2>
 
 <p align="center">
   <b>Smart Monitoring • Early Detection • Safer LPG Usage</b>
 </p>
 
 <p align="center">
-  IoT + Embedded Systems + Machine Learning + Cloud + Mobile
+  IoT • Embedded Systems • Machine Learning • Cloud • Mobile
 </p>

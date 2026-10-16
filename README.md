@@ -1,4 +1,4 @@
-##🔥 GasGuard ##
+🔥 GasGuard 
 
 <h2 align="center">
 IoT & Machine Learning-Based LPG Monitoring and Safety System

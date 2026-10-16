@@ -189,7 +189,7 @@ Keep credentials out of Git. Configure Firebase Authentication, database rules, 
 
 ## ⚠️ Safety
 
-Educational prototype—not a certified LPG safety system. Do not use it as a replacement for certified detectors, approved valves, or professional inspections.
+Educational prototype - not a certified LPG safety system. Do not use it as a replacement for certified detectors, approved valves, or professional inspections.
 
 ## 👨‍💻 Developer
 
